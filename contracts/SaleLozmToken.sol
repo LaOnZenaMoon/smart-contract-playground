@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+import "MintLozmToken.sol";
+
+contract SaleLozmToken {
+    MintLozmToken public mintTokenAddress;
+
+    mapping(uint256 => uint256) public tokenPrices;
+
+    uint256[] public onSaleTokenArray;
+
+    constructor(address _mintTokenAddress) {
+        mintTokenAddress = MintLozmToken(_mintTokenAddress);
+    }
+
+    function setForSaleToken(uint256 _tokenId, uint256 _price) public {
+        address tokenOwner = mintTokenAddress.ownerOf(_tokenId);
+
+        require(tokenOwner == msg.sender, "Caller is not token owner.");
+        require(_price > 0, "Sale price is larger than 0.");
+        require(tokenPrices[_tokenId] == 0, "The token is already on sale.");
+        require(mintTokenAddress.isApprovedForAll(tokenOwner, address(this)), "Token owner did not approve token.");
+
+        tokenPrices[_tokenId] = _price;
+
+        onSaleTokenArray.push(_tokenId);
+    }
+}

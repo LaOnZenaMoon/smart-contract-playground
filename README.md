@@ -8,6 +8,14 @@
 ## Skills
 * Solidity
 * OpenZeppelin
-```
-$ npm install @openzeppelin/contracts
-```
+  ```
+  $ npm install @openzeppelin/contracts
+  ```
+* Remix
+  * Connect from Remix web IDE to localhost
+    ```
+    $ npm uninstall -g remixd
+    $ yarn global add @remix-project/remixd
+    $ remixd -s . --remix-ide https://remix.ethereum.org
+    ```
+  

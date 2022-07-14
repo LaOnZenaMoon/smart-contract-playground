@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'org.springframework.boot' version '2.5.8'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    group 'me.lozm'
+    version '1.0.0'
+
+    sourceCompatibility = 11
+    targetCompatibility = 11
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation 'org.apache.commons:commons-lang3:3.12.0'
+        implementation 'org.modelmapper:modelmapper:2.4.5'
+
+        implementation 'org.mapstruct:mapstruct:1.4.1.Final'
+        annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.1.Final'
+
+        implementation 'org.projectlombok:lombok:1.18.12'
+        annotationProcessor 'org.projectlombok:lombok:1.18.12'
+        testImplementation 'org.projectlombok:lombok:1.18.12'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+        testImplementation('org.springframework.boot:spring-boot-starter-test') {
+            exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+}

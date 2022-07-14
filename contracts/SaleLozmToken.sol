@@ -37,7 +37,7 @@ contract SaleLozmToken {
         require(tokenOwner != msg.sender, "Caller is token owner.");
 
         payable(tokenOwner).transfer(msg.value);
-        mintTokenAddress.safetyTransferFrom(tokenOwner, msg.sender, _tokenId);
+        mintTokenAddress.safeTransferFrom(tokenOwner, msg.sender, _tokenId);
 
         tokenPrices[_tokenId] = 0;
 

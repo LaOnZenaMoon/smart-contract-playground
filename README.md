@@ -18,4 +18,15 @@
     $ yarn global add @remix-project/remixd
     $ remixd -s . --remix-ide https://remix.ethereum.org
     ```
-  
+* Truffle
+  ```
+  $ npm install -g truffle
+  $ truffle compile
+  # When compilation failed
+  $ npm init
+  $ npm install --save @openzeppelin/contracts
+  ```
+* Ganache
+  ```
+  $ npm install -g ganache-cli
+  ```

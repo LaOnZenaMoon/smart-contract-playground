@@ -27,4 +27,29 @@ contract SaleLozmToken {
 
         onSaleTokenArray.push(_tokenId);
     }
+
+    function purchaseToken(uint256 _tokenId) public payable {
+        uint256 price = tokenPrices[_tokenId];
+        address tokenOwner = mintTokenAddress.ownerOf(_tokenId);
+
+        require(price > 0, "The token is not on sale.");
+        require(price <= msg.value, "Caller send lower than price.");
+        require(tokenOwner != msg.sender, "Caller is token owner.");
+
+        payable(tokenOwner).transfer(msg.value);
+        mintTokenAddress.safetyTransferFrom(tokenOwner, msg.sender, _tokenId);
+
+        tokenPrices[_tokenId] = 0;
+
+        for (uint256 i = 0; i < onSaleTokenArray.length; i++) {
+            if (tokenPrices[onSaleTokenArray[i]] == 0) {
+                onSaleTokenArray[i] = onSaleTokenArray[onSaleTokenArray.length - 1];
+                onSaleTokenArray.pop();
+            }
+        }
+    }
+
+    function getOnSaleTokenArrayLength() view public returns (uint256) {
+        return onSaleTokenArray.length;
+    }
 }

@@ -10,12 +10,12 @@ contract MintLozmToken is ERC721Enumerable {
     constructor() ERC721("laonzenamoon", "LOZM") {}
 
     function mintToken() public {
-        uint256 lozmTokenId = totalSupply() + 1;
+        uint256 tokenId = totalSupply() + 1;
 
-        uint256 tokenType = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, lozmTokenId))) % 5 + 1;
+        uint256 tokenType = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, tokenId))) % 5 + 1;
 
-        mintedTokens[lozmTokenId] = tokenType;
+        mintedTokens[tokenId] = tokenType;
 
-        _mint(msg.sender, lozmTokenId);
+        _mint(msg.sender, tokenId);
     }
 }

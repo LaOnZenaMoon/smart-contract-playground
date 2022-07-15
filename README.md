@@ -25,6 +25,7 @@
   # When compilation failed
   $ npm init
   $ npm install --save @openzeppelin/contracts
+  $ truffle migrate --reset
   ```
 * Ganache
   ```

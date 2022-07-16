@@ -52,4 +52,8 @@ contract SaleLozmToken {
     function getOnSaleTokenArrayLength() view public returns (uint256) {
         return onSaleTokenArray.length;
     }
+
+    function getTokenPrice(uint256 _tokenId) view public returns (uint256) {
+        return tokenPrices[_tokenId];
+    }
 }

@@ -35,7 +35,7 @@ contract MintLozmToken is ERC721Enumerable {
     function getTokens(address _tokenOwner) view public returns (TokenData[] memory) {
         uint256 balanceLength = balanceOf(_tokenOwner);
 
-        require(balanceLength == 0, "Owner did not have toekn.");
+        require(balanceLength != 0, "Owner did not have token.");
 
         TokenData[] memory tokenDataArray = new TokenData[](balanceLength);
 

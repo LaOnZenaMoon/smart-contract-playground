@@ -4,6 +4,7 @@ import io.ipfs.api.IPFS;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -22,6 +23,7 @@ class IpfsTest {
 
     final String IpfsUrlFormat = "http://localhost:8080/ipfs/%s";
 
+    @Disabled
     @DisplayName("IPFS 파일 생성 성공")
     @ParameterizedTest(name = "{index}. {displayName} 입력값={0}")
     @ValueSource(strings = {"hello.txt", "sample.jpg"})

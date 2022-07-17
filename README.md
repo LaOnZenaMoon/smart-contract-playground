@@ -3,7 +3,11 @@
 
 ## Project structure
 ### contracts
-* The module for smart contracts 
+* The module for smart contracts
+
+### application
+#### smart-contract-service-app
+* The server for smart-contract operations
 
 ## Skills
 * Solidity

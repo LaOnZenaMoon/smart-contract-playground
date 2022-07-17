@@ -31,3 +31,10 @@
   ```
   $ npm install -g ganache-cli
   ```
+* IPFS
+  * java-ipfs-http-client
+  * [IPFS Daemon](https://docs.ipfs.io/install/)
+  ```
+  $ ipfs init
+  $ ipfs daemon
+  ```

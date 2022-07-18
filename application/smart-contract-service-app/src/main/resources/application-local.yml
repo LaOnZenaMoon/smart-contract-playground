@@ -1,0 +1,7 @@
+smart-contracts:
+  mint-token-contract-address: "0xF82de707918AAa0746c831598260b0Bca7676893"
+  sale-token-contract-address: "0x390B92dcF7031e1963EdfDc46751172eaa338E9B"
+
+ipfs:
+  prefix-url: http://localhost:8080/ipfs/%s
+  address: /ip4/127.0.0.1/tcp/5001

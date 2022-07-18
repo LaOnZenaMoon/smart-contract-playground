@@ -1,0 +1,14 @@
+server:
+  port: 8000
+  shutdown: graceful
+
+spring:
+  application:
+    name: smart-contract-service-app
+  profiles:
+    active: local
+
+logging:
+  level:
+    root: INFO
+    org.web3j.protocol.http.HttpService: DEBUG

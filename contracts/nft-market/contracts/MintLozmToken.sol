@@ -6,22 +6,22 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "./SaleLozmToken.sol";
 
 contract MintLozmToken is ERC721Enumerable {
-    mapping(uint256 => uint256) public mintedTokens;
+    mapping(uint256 => string) public mintedTokens;
 
     SaleLozmToken public saleLozmToken;
 
     struct TokenData {
         uint256 tokenId;
-        uint256 tokenUrl;
+        string tokenUrl;
         uint256 tokenPrice;
     }
 
     constructor() ERC721("laonzenamoon", "LOZM") {}
 
-    function mintToken() public {
+    function mintToken(string memory tokenUrl) public {
         uint256 tokenId = totalSupply() + 1;
 
-        uint256 tokenUrl = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, tokenId))) % 5 + 1;
+//        uint256 tokenUrl = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, tokenId))) % 5 + 1;
 
         mintedTokens[tokenId] = tokenUrl;
 
@@ -41,7 +41,7 @@ contract MintLozmToken is ERC721Enumerable {
 
         for (uint256 i = 0; i < balanceLength; i++) {
             uint256 tokenId = tokenOfOwnerByIndex(_tokenOwner, i);
-            uint256 tokenUrl = mintedTokens[tokenId];
+            string memory tokenUrl = mintedTokens[tokenId];
             uint256 tokenPrice = saleLozmToken.getTokenPrice(tokenId);
 
             tokenDataArray[i] = TokenData(tokenId, tokenUrl, tokenPrice);

@@ -5,12 +5,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Bool;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
@@ -65,20 +61,15 @@ class Web3jTest {
         Request<?, EthGetTransactionCount> purchaseTokenEthGetTransactionCountRequest = purchaseTokenWeb3j.ethGetTransactionCount(purchaseTokenCallerCredentials.getAddress(), DefaultBlockParameterName.LATEST);
 
         final BigInteger gas = new BigInteger("1537000");
-        final String mintTokenContractAddress = "0xfDCBf3Fb268FBe3ea60994261CE44E739B3DdF6f";
-        final String saleTokenContractAddress = "0xe28F88E492d42596fF4374dDBC769c969aa1A5b5";
+        final String mintTokenContractAddress = "0xF82de707918AAa0746c831598260b0Bca7676893";
+        final String saleTokenContractAddress = "0x390B92dcF7031e1963EdfDc46751172eaa338E9B";
 
         // When
         log.info("1. mint token");
         Function mintTokenFunction = new Function(
                 "mintToken",
-                List.of(),
-                List.of(new TypeReference<Type>() {
-                    @Override
-                    public java.lang.reflect.Type getType() {
-                        return Uint256.class;
-                    }
-                }));
+                List.of(new Utf8String("http://localhost:8080/ipfs/QmQzCQn4puG4qu8PVysxZmscmQ5vT1ZXpqo7f58Uh9QfyY")),
+                List.of(new TypeReference<Type>() {}));
         Transaction mintTokenFunctionCallTransaction = Transaction.createFunctionCallTransaction(
                 mintTokenCallerCredentials.getAddress(), // from
                 mintTokenEthGetTransactionCountRequest.send().getTransactionCount(), // nonce
@@ -88,10 +79,6 @@ class Web3jTest {
                 FunctionEncoder.encode(mintTokenFunction) // data
         );
         EthSendTransaction mintTokenTransactionResponse = mintTokenWeb3j.ethSendTransaction(mintTokenFunctionCallTransaction).sendAsync().get();
-        //TODO mintToken function 호출에 대한 return 값 받기
-        // 1. return tokenId 받아서 테스트 코드 진행시키기
-        List<Type> outputList = FunctionReturnDecoder.decode(mintTokenTransactionResponse.getResult(), mintTokenFunction.getOutputParameters());
-        log.info("mintToken function output: {}", outputList.toString());
 
         log.info("2. set approval for all");
         Transaction setApprovalForAllFunctionCallTransaction = Transaction.createFunctionCallTransaction(

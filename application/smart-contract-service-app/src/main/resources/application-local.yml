@@ -1,6 +1,6 @@
 smart-contracts:
-  mint-token-contract-address: "0xF82de707918AAa0746c831598260b0Bca7676893"
-  sale-token-contract-address: "0x390B92dcF7031e1963EdfDc46751172eaa338E9B"
+  mint-token-contract-address: "0xed926367cF3c2c2aC98dda76802907286C55216E"
+  sale-token-contract-address: "0x031c57630e4F86C0A20218DA94D32432e690cD60"
 
 ipfs:
   prefix-url: http://localhost:8080/ipfs/%s

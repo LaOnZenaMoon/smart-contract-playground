@@ -12,11 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.io.IOException;
 
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -42,6 +45,24 @@ class ContractServiceImplTest {
 
         // Then
         assertTrue(isNotBlank(responseVo.getTokenUrl()));
+    }
+
+    @Disabled
+    @DisplayName("SaleLozmToken 스마트 컨트랙트 등록 및 트랜잭션 결과 조회 성공")
+    @Test
+    void setSaleLozmToken_getTransactionReceipt_success() {
+        // Given
+        final String senderSecretKey = "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d";
+
+        // When
+        EthSendTransaction ethSendTransaction = contractService.setSaleLozmToken(senderSecretKey);
+        String transactionHash = ethSendTransaction.getTransactionHash();
+        TransactionReceipt transactionReceipt = contractService.getTransactionReceipt(transactionHash);
+        log.info(transactionReceipt.toString());
+
+        // Then
+        assertFalse(ethSendTransaction.hasError());
+        assertTrue(transactionReceipt.isStatusOK());
     }
 
     @Disabled

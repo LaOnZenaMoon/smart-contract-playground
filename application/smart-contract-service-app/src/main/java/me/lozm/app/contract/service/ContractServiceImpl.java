@@ -20,7 +20,9 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
@@ -77,11 +79,46 @@ public class ContractServiceImpl implements ContractService {
     public ContractListVo.Response getTokens(ContractListVo.Request requestVo) {
         Credentials credentials = Credentials.create(requestVo.getPrivateKey());
 
-        setSaleLozmToken(requestVo);
+        setSaleLozmToken(requestVo.getPrivateKey());
 
         List<ContractListVo.Detail> resultList = getTokens(credentials);
 
         return new ContractListVo.Response(resultList);
+    }
+
+    @Override
+    public EthSendTransaction setSaleLozmToken(String privateKey) {
+        if (isBlank(privateKey)) {
+            throw new IllegalArgumentException(format("EOA 개인키는 비어있을 수 없습니다."));
+        }
+
+        Function setSaleLozmTokenFunction = new Function(
+                "setSaleLozmToken",
+                List.of(new Address(saleTokenContractAddress)),
+                List.of(new TypeReference<Type>() {})
+        );
+        return callTransaction(mintTokenContractAddress, Credentials.create(privateKey), setSaleLozmTokenFunction);
+    }
+
+    @Override
+    public TransactionReceipt getTransactionReceipt(String transactionHash) {
+        EthGetTransactionReceipt ethGetTransactionReceipt;
+        try {
+            ethGetTransactionReceipt = web3j.ethGetTransactionReceipt(transactionHash).sendAsync().get();
+        } catch (ExecutionException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+
+        if (ethGetTransactionReceipt.getTransactionReceipt().isEmpty()) {
+            throw new IllegalArgumentException(format("잘못된 transaction 값입니다. transaction hash: %s", transactionHash));
+        }
+
+        return ethGetTransactionReceipt.getTransactionReceipt().get();
     }
 
     private List<ContractListVo.Detail> getTokens(Credentials credentials) {
@@ -97,15 +134,6 @@ public class ContractServiceImpl implements ContractService {
         }
         List<ContractListVo.Detail> resultList = (List<ContractListVo.Detail>) decodedOutputParameterList.get(0).getValue();
         return resultList;
-    }
-
-    private void setSaleLozmToken(ContractListVo.Request requestVo) {
-        Function setSaleLozmTokenFunction = new Function(
-                "setSaleLozmToken",
-                List.of(new Address(saleTokenContractAddress)),
-                List.of(new TypeReference<Type>() {})
-        );
-        callTransaction(mintTokenContractAddress, Credentials.create(requestVo.getPrivateKey()), setSaleLozmTokenFunction);
     }
 
     @NotNull
@@ -129,7 +157,6 @@ public class ContractServiceImpl implements ContractService {
             return ethCall;
         } catch (ExecutionException e) {
             log.error(e.getMessage());
-            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
             log.error(e.getMessage());
@@ -162,7 +189,6 @@ public class ContractServiceImpl implements ContractService {
             return ethSendTransaction;
         } catch (IOException | ExecutionException e) {
             log.error(e.getMessage());
-            e.printStackTrace();
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
             log.error(e.getMessage());

@@ -98,7 +98,7 @@ public class SmartContractClientImpl implements SmartContractClient {
     }
 
     @Override
-    public EthSendTransaction callTransaction(String contractAddress, Credentials senderCredentials, Function web3jFunction) {
+    public EthSendTransaction callTransactionFunction(String contractAddress, Credentials senderCredentials, Function web3jFunction) {
         validateSmartContractAddress(contractAddress);
 
         Web3j web3j = createWeb3j();

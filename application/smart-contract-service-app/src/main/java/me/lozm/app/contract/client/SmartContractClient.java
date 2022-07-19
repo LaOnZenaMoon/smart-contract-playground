@@ -12,6 +12,6 @@ public interface SmartContractClient {
 
     EthCall callViewFunction(String contractAddress, Credentials senderCredentials, Function web3jFunction);
 
-    EthSendTransaction callTransaction(String contractAddress, Credentials senderCredentials, Function web3jFunction);
+    EthSendTransaction callTransactionFunction(String contractAddress, Credentials senderCredentials, Function web3jFunction);
 
 }

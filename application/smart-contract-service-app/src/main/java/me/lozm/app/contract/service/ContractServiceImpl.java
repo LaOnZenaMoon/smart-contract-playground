@@ -57,7 +57,7 @@ public class ContractServiceImpl implements ContractService {
     public ContractMintVo.Response mintToken(ContractMintVo.Request requestVo) {
         Multihash multihash = ipfsClient.add(requestVo.getFile());
 
-        smartContractClient.callTransaction(
+        smartContractClient.callTransactionFunction(
                 smartContractConfig.getContractAddress().getMintToken(),
                 Credentials.create(requestVo.getPrivateKey()),
                 new Function(
@@ -79,7 +79,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractSellVo.Response sellToken(ContractSellVo.Request requestVo) {
-        EthSendTransaction setForSaleTokenResponse = smartContractClient.callTransaction(
+        EthSendTransaction setForSaleTokenResponse = smartContractClient.callTransactionFunction(
                 smartContractConfig.getContractAddress().getSaleToken(),
                 Credentials.create(requestVo.getPrivateKey()),
                 new Function(
@@ -97,7 +97,7 @@ public class ContractServiceImpl implements ContractService {
 
 
     private EthSendTransaction setApprovalForAll(Credentials systemCredentials) {
-        return smartContractClient.callTransaction(
+        return smartContractClient.callTransactionFunction(
                 smartContractConfig.getContractAddress().getMintToken(),
                 systemCredentials,
                 new Function(
@@ -112,7 +112,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private EthSendTransaction isApprovedForAll(Credentials systemCredentials) {
-        return smartContractClient.callTransaction(
+        return smartContractClient.callTransactionFunction(
                 smartContractConfig.getContractAddress().getMintToken(),
                 systemCredentials,
                 new Function(
@@ -127,7 +127,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private EthSendTransaction setSaleLozmToken(Credentials systemCredentials) {
-        return smartContractClient.callTransaction(
+        return smartContractClient.callTransactionFunction(
                 smartContractConfig.getContractAddress().getMintToken(),
                 systemCredentials,
                 new Function(

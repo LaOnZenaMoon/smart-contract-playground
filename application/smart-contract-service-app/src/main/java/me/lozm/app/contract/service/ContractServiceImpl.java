@@ -77,12 +77,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractListVo.Response getTokens(ContractListVo.Request requestVo) {
-        Credentials senderCredentials = Credentials.create(requestVo.getPrivateKey());
-
-        EthSendTransaction setSaleLozmTokenTransaction = setSaleLozmToken(senderCredentials);
-        validateInitialSetting(setSaleLozmTokenTransaction, "setSaleLozmToken");
-
-        List<ContractListVo.Detail> resultList = getTokens(senderCredentials);
+        List<ContractListVo.Detail> resultList = getTokens(Credentials.create(requestVo.getPrivateKey()));
         return new ContractListVo.Response(resultList);
     }
 

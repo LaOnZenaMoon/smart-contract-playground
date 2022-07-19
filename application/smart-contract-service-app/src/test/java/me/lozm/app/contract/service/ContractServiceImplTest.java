@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
 import me.lozm.global.config.SmartContractConfig;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,7 +33,7 @@ class ContractServiceImplTest {
     private SmartContractConfig smartContractConfig;
 
 
-    // @Disabled
+    @Disabled
     @DisplayName("mint token 성공")
     @ParameterizedTest(name = "{index}. {displayName} 입력값={0}")
     @ValueSource(strings = {"hello.txt", "sample.jpg"})
@@ -49,7 +50,7 @@ class ContractServiceImplTest {
         assertTrue(isNotBlank(responseVo.getTokenUrl()));
     }
 
-    // @Disabled
+    @Disabled
     @DisplayName("EOA token 조회 성공")
     @Test
     void getTokens_success() throws IOException {

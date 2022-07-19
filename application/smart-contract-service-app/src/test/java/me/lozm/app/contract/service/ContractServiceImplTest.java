@@ -1,6 +1,7 @@
 package me.lozm.app.contract.service;
 
 import lombok.extern.slf4j.Slf4j;
+import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
 import org.junit.jupiter.api.Disabled;
@@ -30,6 +31,10 @@ class ContractServiceImplTest {
     @Autowired
     private ContractService contractService;
 
+    @Autowired
+    private SmartContractClient smartContractClient;
+
+
     @Disabled
     @DisplayName("mint token 성공")
     @ParameterizedTest(name = "{index}. {displayName} 입력값={0}")
@@ -57,7 +62,7 @@ class ContractServiceImplTest {
         // When
         EthSendTransaction ethSendTransaction = contractService.setSaleLozmToken(senderSecretKey);
         String transactionHash = ethSendTransaction.getTransactionHash();
-        TransactionReceipt transactionReceipt = contractService.getTransactionReceipt(transactionHash);
+        TransactionReceipt transactionReceipt = smartContractClient.getTransactionReceipt(transactionHash);
         log.info(transactionReceipt.toString());
 
         // Then

@@ -12,6 +12,7 @@ public enum CustomExceptionType {
     // Internal Server Error
     INTERNAL_SERVER_ERROR("SERVER_001", "요청을 처리하는 중에 오류가 있습니다."),
     INTERNAL_SERVER_ERROR_IPFS("SERVER_002", "IPFS 요청을 처리하는 중에 오류가 있습니다."),
+    INTERNAL_SERVER_ERROR_SMART_CONTRACT("SERVER_003", "스마트 컨트랙트 요청을 처리하는 중에 오류가 있습니다."),
     ;
 
     private final String code;

@@ -31,6 +31,7 @@ public class ContractListVo {
     }
 
     @Getter
+    @ToString
     public static class Detail extends DynamicStruct {
         private final BigInteger tokenId;
         private final String tokenUrl;

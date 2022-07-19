@@ -112,7 +112,7 @@ class ContractServiceImplTest {
         assertTrue(transactionReceipt.isStatusOK());
     }
 
-//    @Disabled
+    @Disabled
     @DisplayName("token 구매 성공")
     @Test
     void purchaseToken_success() throws IOException {
@@ -129,6 +129,7 @@ class ContractServiceImplTest {
 
         log.info("2. token 판매자의 token 목록 조회");
         ContractListVo.Response listResponseVo1 = contractService.getTokens(new ContractListVo.Request(systemPrivateKey));
+        log.info(listResponseVo1.toString());
         List<ContractListVo.Detail> tokenList1 = listResponseVo1.getTokenList();
         ContractListVo.Detail mintTokenDetail = tokenList1.get(tokenList1.size() - 1);
         final String tokenId = mintTokenDetail.getTokenId().toString();
@@ -149,6 +150,7 @@ class ContractServiceImplTest {
 
         log.info("7. token 구매자의 token 목록 조회");
         ContractListVo.Response listResponseVo2 = contractService.getTokens(new ContractListVo.Request(samplePrivateKey));
+        log.info(listResponseVo2.toString());
 
         // Then
         assertTrue(isNotEmpty(listResponseVo1));

@@ -7,6 +7,7 @@ import me.lozm.app.contract.client.IpfsClient;
 import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
+import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.IpfsConfig;
 import me.lozm.global.config.SmartContractConfig;
 import me.lozm.utils.exception.BadRequestException;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
@@ -73,6 +75,24 @@ public class ContractServiceImpl implements ContractService {
     public ContractListVo.Response getTokens(ContractListVo.Request requestVo) {
         List<ContractListVo.Detail> resultList = getTokens(Credentials.create(requestVo.getPrivateKey()));
         return new ContractListVo.Response(resultList);
+    }
+
+    @Override
+    public ContractSellVo.Response sellToken(ContractSellVo.Request requestVo) {
+        EthSendTransaction setForSaleTokenResponse = smartContractClient.callTransaction(
+                smartContractConfig.getContractAddress().getSaleToken(),
+                Credentials.create(requestVo.getPrivateKey()),
+                new Function(
+                        "setForSaleToken",
+                        List.of(
+                                new Uint256(requestVo.getTokenId()),
+                                new Uint256(requestVo.getTokenPrice())
+                        ),
+                        List.of(new TypeReference<Type>() {
+                        })
+                )
+        );
+        return new ContractSellVo.Response(setForSaleTokenResponse.getTransactionHash());
     }
 
 

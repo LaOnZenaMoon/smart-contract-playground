@@ -1,8 +1,10 @@
 package me.lozm.app.contract.service;
 
 import lombok.extern.slf4j.Slf4j;
+import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
+import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.SmartContractConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -13,13 +15,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
+import org.web3j.crypto.Credentials;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @ActiveProfiles("local")
@@ -28,6 +32,9 @@ class ContractServiceImplTest {
 
     @Autowired
     private ContractService contractService;
+
+    @Autowired
+    private SmartContractClient smartContractClient;
 
     @Autowired
     private SmartContractConfig smartContractConfig;
@@ -65,6 +72,36 @@ class ContractServiceImplTest {
         // Then
         assertTrue(isNotEmpty(listResponseVo));
         assertFalse(listResponseVo.getTokenList().isEmpty());
+    }
+
+    @Disabled
+    @DisplayName("token 판매 등록 성공")
+    @Test
+    void sellToken_success() throws IOException {
+        // Given
+        final String systemPrivateKey = smartContractConfig.getEoa().getSystemPrivateKey();
+        Credentials systemCredentials = Credentials.create(systemPrivateKey);
+        ClassPathResource sampleClassPathResource = new ClassPathResource("ipfs/sample.jpg");
+        final String tokenPrice = "10";
+
+        // When
+        contractService.mintToken(new ContractMintVo.Request(systemPrivateKey, sampleClassPathResource.getFile()));
+
+        ContractListVo.Response listResponseVo = contractService.getTokens(new ContractListVo.Request(systemPrivateKey));
+        List<ContractListVo.Detail> tokenList = listResponseVo.getTokenList();
+        ContractListVo.Detail mintTokenDetail = tokenList.get(tokenList.size() - 1);
+
+        ContractSellVo.Response sellResponseVo = contractService.sellToken(new ContractSellVo.Request(systemPrivateKey, mintTokenDetail.getTokenId().toString(), tokenPrice));
+        TransactionReceipt transactionReceipt = smartContractClient.getTransactionReceipt(sellResponseVo.getTransactionHash());
+        log.info(transactionReceipt.toString());
+
+        // Then
+        assertTrue(isNotEmpty(listResponseVo));
+        assertFalse(listResponseVo.getTokenList().isEmpty());
+        assertTrue(isNotEmpty(sellResponseVo));
+        assertTrue(isNotBlank(sellResponseVo.getTransactionHash()));
+        assertTrue(transactionReceipt.isStatusOK());
+        assertEquals(systemCredentials.getAddress(), transactionReceipt.getFrom());
     }
 
 }

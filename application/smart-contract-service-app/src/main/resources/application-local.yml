@@ -5,6 +5,7 @@ smart-contracts:
     sale-token: "0x031c57630e4F86C0A20218DA94D32432e690cD60"
   eoa:
     system-private-key: "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d"
+    sample-private-key: "606ec4972e7222e3d05b08e28648fea50feed7d6f0c9549c7960c724907c1a8d"
 
 ipfs:
   prefix-url: http://localhost:8080/ipfs/%s

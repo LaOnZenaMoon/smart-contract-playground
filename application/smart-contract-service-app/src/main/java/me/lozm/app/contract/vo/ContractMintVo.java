@@ -14,7 +14,7 @@ public class ContractMintVo {
         private final File file;
 
         public Request(String privateKey, File file) {
-            Assert.hasLength(privateKey, "판매자의 개인키 정보는 비어있을 수 없습니다.");
+            Assert.hasLength(privateKey, "요청자의 개인키 정보는 비어있을 수 없습니다.");
             Assert.notNull(file, "등록할 NFT 파일은 null 일 수 없습니다.");
 
             this.privateKey = privateKey;

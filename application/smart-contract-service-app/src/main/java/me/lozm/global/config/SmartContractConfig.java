@@ -26,6 +26,7 @@ public class SmartContractConfig {
     @Setter
     public static class Eoa {
         private String systemPrivateKey;
+        private String samplePrivateKey;
     }
 
 }

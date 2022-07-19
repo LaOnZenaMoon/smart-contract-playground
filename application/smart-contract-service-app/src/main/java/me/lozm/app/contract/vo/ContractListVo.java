@@ -17,7 +17,7 @@ public class ContractListVo {
         private final String privateKey;
 
         public Request(String privateKey) {
-            Assert.hasLength(privateKey, "판매자의 개인키 정보는 비어있을 수 없습니다.");
+            Assert.hasLength(privateKey, "요청자의 개인키 정보는 비어있을 수 없습니다.");
 
             this.privateKey = privateKey;
         }

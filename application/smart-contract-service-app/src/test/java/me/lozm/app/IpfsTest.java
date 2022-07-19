@@ -4,10 +4,13 @@ import io.ipfs.api.IPFS;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 import lombok.extern.slf4j.Slf4j;
+import me.lozm.global.config.IpfsConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
@@ -19,9 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
+@SpringBootTest
 class IpfsTest {
 
-    final String IpfsUrlFormat = "http://localhost:8080/ipfs/%s";
+    @Autowired
+    private IpfsConfig ipfsConfig;
+
 
     @Disabled
     @DisplayName("IPFS 파일 생성 성공")
@@ -36,7 +42,7 @@ class IpfsTest {
         // When
         List<MerkleNode> addList = ipfs.add(byteArrayWrapper, true);
         for (MerkleNode merkleNode : addList) {
-            log.info(format("IPFS Node: " + IpfsUrlFormat, merkleNode.hash));
+            log.info(format("IPFS Node: " + ipfsConfig.getPrefixUrl(), merkleNode.hash));
         }
 
         // Then

@@ -22,31 +22,15 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 class Web3jTest {
 
-    @DisplayName("EOA 계정 연결 성공")
-    @Test
-    void connectToEOA_success() {
-        // Given
-        final String eoaPrivateKey = "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d";
-
-        // When
-        Credentials credentials = Credentials.create(eoaPrivateKey);
-
-        // Then
-        final String eoaAddress = credentials.getAddress();
-        assertTrue(isNotBlank(eoaAddress));
-    }
-
     @Disabled
     @DisplayName("스마트 컨트랙트 함수 호출 성공")
     @Test
-    void invokeSmartContractFunction_success() throws IOException, ExecutionException, InterruptedException {
+    void callSmartContractFunction_success() throws IOException, ExecutionException, InterruptedException {
         // Given
         final String mintTokenEoaPrivateKey = "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d";
         Credentials mintTokenCallerCredentials = Credentials.create(mintTokenEoaPrivateKey);
@@ -66,12 +50,9 @@ class Web3jTest {
 
         // When
         log.info("1. mint token");
-        Function mintTokenFunction = new Function(
-                "mintToken",
-                List.of(new Utf8String("http://localhost:8080/ipfs/QmQzCQn4puG4qu8PVysxZmscmQ5vT1ZXpqo7f58Uh9QfyY")),
-                List.of(new TypeReference<Type>() {}));
-        Transaction mintTokenFunctionCallTransaction = Transaction.createFunctionCallTransaction(
-                mintTokenCallerCredentials.getAddress(), // from
+        Function mintTokenFunction = new Function("mintToken", List.of(new Utf8String("http://localhost:8080/ipfs/QmQzCQn4puG4qu8PVysxZmscmQ5vT1ZXpqo7f58Uh9QfyY")), List.of(new TypeReference<Type>() {
+        }));
+        Transaction mintTokenFunctionCallTransaction = Transaction.createFunctionCallTransaction(mintTokenCallerCredentials.getAddress(), // from
                 mintTokenEthGetTransactionCountRequest.send().getTransactionCount(), // nonce
                 Transaction.DEFAULT_GAS, // gasPrice
                 gas, //gasLimit
@@ -81,65 +62,49 @@ class Web3jTest {
         EthSendTransaction mintTokenTransactionResponse = mintTokenWeb3j.ethSendTransaction(mintTokenFunctionCallTransaction).sendAsync().get();
 
         log.info("2. set approval for all");
-        Transaction setApprovalForAllFunctionCallTransaction = Transaction.createFunctionCallTransaction(
-                mintTokenCallerCredentials.getAddress(), // from
+        Transaction setApprovalForAllFunctionCallTransaction = Transaction.createFunctionCallTransaction(mintTokenCallerCredentials.getAddress(), // from
                 mintTokenEthGetTransactionCountRequest.send().getTransactionCount(), // nonce
                 Transaction.DEFAULT_GAS, // gasPrice
                 gas, //gasLimit
                 mintTokenContractAddress, // to
-                FunctionEncoder.encode(new Function(
-                        "setApprovalForAll",
-                        List.of(new Address(saleTokenContractAddress), new Bool(true)),
-                        List.of(new TypeReference<Type>() {})
-                ) // data
-        ));
+                FunctionEncoder.encode(new Function("setApprovalForAll", List.of(new Address(saleTokenContractAddress), new Bool(true)), List.of(new TypeReference<Type>() {
+                        })) // data
+                ));
         EthSendTransaction setApprovalForAllTransactionResponse = mintTokenWeb3j.ethSendTransaction(setApprovalForAllFunctionCallTransaction).sendAsync().get();
 
         log.info("3. is approved for all");
-        Transaction isApprovedForAllFunctionCallTransaction = Transaction.createFunctionCallTransaction(
-                mintTokenCallerCredentials.getAddress(), // from
+        Transaction isApprovedForAllFunctionCallTransaction = Transaction.createFunctionCallTransaction(mintTokenCallerCredentials.getAddress(), // from
                 mintTokenEthGetTransactionCountRequest.send().getTransactionCount(), // nonce
                 Transaction.DEFAULT_GAS, // gasPrice
                 gas, //gasLimit
                 mintTokenContractAddress, // to
-                FunctionEncoder.encode(new Function(
-                                "isApprovedForAll",
-                                List.of(new Address(mintTokenCallerCredentials.getAddress()), new Address(saleTokenContractAddress)),
-                                List.of(new TypeReference<Type>() {})
-                        ) // data
+                FunctionEncoder.encode(new Function("isApprovedForAll", List.of(new Address(mintTokenCallerCredentials.getAddress()), new Address(saleTokenContractAddress)), List.of(new TypeReference<Type>() {
+                        })) // data
                 ));
         EthSendTransaction isApprovedForAllTransactionResponse = mintTokenWeb3j.ethSendTransaction(isApprovedForAllFunctionCallTransaction).sendAsync().get();
 
         log.info("4. set for sale token");
         final long tokenId = 6L;
         final long tokenPrice = 10L;
-        Transaction setForSaleTokenFunctionCallTransaction = Transaction.createFunctionCallTransaction(
-                mintTokenCallerCredentials.getAddress(), // from
+        Transaction setForSaleTokenFunctionCallTransaction = Transaction.createFunctionCallTransaction(mintTokenCallerCredentials.getAddress(), // from
                 mintTokenEthGetTransactionCountRequest.send().getTransactionCount(), // nonce
                 Transaction.DEFAULT_GAS, // gasPrice
                 gas, //gasLimit
                 saleTokenContractAddress, // to
-                FunctionEncoder.encode(new Function(
-                                "setForSaleToken",
-                                List.of(new Uint256(tokenId), new Uint256(tokenPrice)),
-                                List.of(new TypeReference<Type>() {})
-                        ) // data
+                FunctionEncoder.encode(new Function("setForSaleToken", List.of(new Uint256(tokenId), new Uint256(tokenPrice)), List.of(new TypeReference<Type>() {
+                        })) // data
                 ));
         EthSendTransaction setForSaleTokenTransactionResponse = mintTokenWeb3j.ethSendTransaction(setForSaleTokenFunctionCallTransaction).sendAsync().get();
 
         log.info("5. purchase token");
-        Transaction purchaseTokenFunctionCallTransaction = Transaction.createFunctionCallTransaction(
-                purchaseTokenCallerCredentials.getAddress(), // from
+        Transaction purchaseTokenFunctionCallTransaction = Transaction.createFunctionCallTransaction(purchaseTokenCallerCredentials.getAddress(), // from
                 purchaseTokenEthGetTransactionCountRequest.send().getTransactionCount(), // nonce
                 Transaction.DEFAULT_GAS, // gasPrice
                 gas, //gasLimit
                 saleTokenContractAddress, // to
                 new BigInteger(String.valueOf(tokenPrice)), // msg.value
-                FunctionEncoder.encode(new Function(
-                                "purchaseToken",
-                                List.of(new Uint256(tokenId - 1)),
-                                List.of(new TypeReference<Type>() {})
-                        ) // data
+                FunctionEncoder.encode(new Function("purchaseToken", List.of(new Uint256(tokenId - 1)), List.of(new TypeReference<Type>() {
+                        })) // data
                 ));
         EthSendTransaction purchaseTokenTransactionResponse = mintTokenWeb3j.ethSendTransaction(purchaseTokenFunctionCallTransaction).sendAsync().get();
 

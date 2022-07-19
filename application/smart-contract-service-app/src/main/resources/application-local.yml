@@ -1,9 +1,10 @@
 smart-contracts:
-  mint-token-contract-address: "0xed926367cF3c2c2aC98dda76802907286C55216E"
-  sale-token-contract-address: "0x031c57630e4F86C0A20218DA94D32432e690cD60"
-  system-eoa:
-    private-key: "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d"
   gas-limit: 1537000
+  contract-address:
+    mint-token: "0xed926367cF3c2c2aC98dda76802907286C55216E"
+    sale-token: "0x031c57630e4F86C0A20218DA94D32432e690cD60"
+  eoa:
+    system-private-key: "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d"
 
 ipfs:
   prefix-url: http://localhost:8080/ipfs/%s

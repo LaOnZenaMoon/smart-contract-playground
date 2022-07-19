@@ -4,10 +4,11 @@ import io.ipfs.api.IPFS;
 import io.ipfs.api.MerkleNode;
 import io.ipfs.api.NamedStreamable;
 import io.ipfs.multihash.Multihash;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.lozm.global.config.IpfsConfig;
 import me.lozm.utils.exception.CustomExceptionType;
 import me.lozm.utils.exception.InternalServerException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -19,18 +20,16 @@ import static java.lang.String.format;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class IpfsClientImpl implements IpfsClient {
 
-    @Value("${ipfs.prefix-url}")
-    private String ipfsPrefixUrl;
+    private final IpfsConfig ipfsConfig;
 
-    @Value("${ipfs.address}")
-    private String ipfsAddress;
 
     @Override
     public Multihash add(File file) {
         try {
-            IPFS ipfs = new IPFS(ipfsAddress);
+            IPFS ipfs = new IPFS(ipfsConfig.getAddress());
 
             NamedStreamable.ByteArrayWrapper byteArrayWrapper = new NamedStreamable.ByteArrayWrapper(
                     file.getName(), Files.readAllBytes(file.toPath()));
@@ -40,7 +39,7 @@ public class IpfsClientImpl implements IpfsClient {
                 throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_IPFS);
             }
 
-            log.info(format(ipfsPrefixUrl, addList.get(0).hash));
+            log.info(format(ipfsConfig.getPrefixUrl(), addList.get(0).hash));
 
             return addList.get(0).hash;
         } catch (IOException e) {

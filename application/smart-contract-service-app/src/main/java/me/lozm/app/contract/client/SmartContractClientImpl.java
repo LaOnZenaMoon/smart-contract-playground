@@ -1,11 +1,12 @@
 package me.lozm.app.contract.client;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.lozm.global.config.SmartContractConfig;
 import me.lozm.utils.exception.BadRequestException;
 import me.lozm.utils.exception.CustomExceptionType;
 import me.lozm.utils.exception.InternalServerException;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.datatypes.Function;
@@ -29,10 +30,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class SmartContractClientImpl implements SmartContractClient {
 
-    @Value("${smart-contracts.gas-limit}")
-    private String gasLimit;
+    private final SmartContractConfig smartContractConfig;
 
 
     @Override
@@ -107,7 +108,7 @@ public class SmartContractClientImpl implements SmartContractClient {
                     senderCredentials.getAddress(), // from
                     web3j.ethGetTransactionCount(senderCredentials.getAddress(), DefaultBlockParameterName.LATEST).send().getTransactionCount(), // nonce
                     Transaction.DEFAULT_GAS, // gasPrice
-                    new BigInteger(gasLimit), //gasLimit
+                    new BigInteger(smartContractConfig.getGasLimit()), //gasLimit
                     contractAddress, // to
                     FunctionEncoder.encode(web3jFunction) // data
             );

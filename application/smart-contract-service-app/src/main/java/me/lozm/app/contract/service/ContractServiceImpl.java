@@ -7,7 +7,11 @@ import me.lozm.app.contract.client.IpfsClient;
 import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
-import org.springframework.beans.factory.annotation.Value;
+import me.lozm.global.config.IpfsConfig;
+import me.lozm.global.config.SmartContractConfig;
+import me.lozm.utils.exception.BadRequestException;
+import me.lozm.utils.exception.CustomExceptionType;
+import me.lozm.utils.exception.InternalServerException;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
@@ -20,7 +24,6 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Service
@@ -29,66 +32,96 @@ public class ContractServiceImpl implements ContractService {
 
     private final IpfsClient ipfsClient;
     private final SmartContractClient smartContractClient;
+    private final SmartContractConfig smartContractConfig;
+    private final IpfsConfig ipfsConfig;
 
-    @Value("${ipfs.prefix-url}")
-    private String ipfsPrefixUrl;
-
-    @Value("${smart-contracts.mint-token-contract-address}")
-    private String mintTokenContractAddress;
-
-    @Value("${smart-contracts.sale-token-contract-address}")
-    private String saleTokenContractAddress;
 
     @PostConstruct
     public void initialize() {
-        initializeContracts();
+        Credentials systemCredentials = Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey());
+
+        EthSendTransaction setApprovalForAllTransaction = setApprovalForAll(systemCredentials);
+        validateInitialSetting(setApprovalForAllTransaction, "setApprovalForAll");
+
+        EthSendTransaction approvedForAllTransaction = isApprovedForAll(systemCredentials);
+        validateInitialSetting(approvedForAllTransaction, "isApprovedForAll");
+
+        EthSendTransaction setSaleLozmTokenTransaction = setSaleLozmToken(systemCredentials);
+        validateInitialSetting(setSaleLozmTokenTransaction, "setSaleLozmToken");
     }
 
-    private void initializeContracts() {
-        //TODO 스마트 컨트랙트 초기 세팅
-        // 1. MintLozmToken.setApprovalForAll(SaleLozmToken.sol address, true)
-        // 2. MintLozmToken.isApprovedForAll(EOA address, SaleLozmToken.sol address)
-        // 3. MintLozmToken.setSaleLozmToken(EOA address)
-    }
 
     @Override
     public ContractMintVo.Response mintToken(ContractMintVo.Request requestVo) {
         Multihash multihash = ipfsClient.add(requestVo.getFile());
 
-        Function mintTokenFunction = new Function(
-                "mintToken",
-                List.of(new Utf8String(multihash.toString())),
-                List.of(new TypeReference<Type>() {
-                })
+        smartContractClient.callTransaction(
+                smartContractConfig.getContractAddress().getMintToken(),
+                Credentials.create(requestVo.getPrivateKey()),
+                new Function(
+                        "mintToken",
+                        List.of(new Utf8String(multihash.toString())),
+                        List.of(new TypeReference<Type>() {
+                        })
+                )
         );
-        smartContractClient.callTransaction(mintTokenContractAddress, Credentials.create(requestVo.getPrivateKey()), mintTokenFunction);
 
-        return new ContractMintVo.Response(String.format(ipfsPrefixUrl, multihash));
+        return new ContractMintVo.Response(format(ipfsConfig.getPrefixUrl(), multihash));
     }
 
     @Override
     public ContractListVo.Response getTokens(ContractListVo.Request requestVo) {
-        Credentials credentials = Credentials.create(requestVo.getPrivateKey());
-
-        setSaleLozmToken(requestVo.getPrivateKey());
-
-        List<ContractListVo.Detail> resultList = getTokens(credentials);
-
+        List<ContractListVo.Detail> resultList = getTokens(Credentials.create(requestVo.getPrivateKey()));
         return new ContractListVo.Response(resultList);
     }
 
-    @Override
-    public EthSendTransaction setSaleLozmToken(String privateKey) {
-        if (isBlank(privateKey)) {
-            throw new IllegalArgumentException(format("EOA 개인키는 비어있을 수 없습니다."));
-        }
 
-        Function setSaleLozmTokenFunction = new Function(
-                "setSaleLozmToken",
-                List.of(new Address(saleTokenContractAddress)),
-                List.of(new TypeReference<Type>() {})
+    private EthSendTransaction setApprovalForAll(Credentials systemCredentials) {
+        return smartContractClient.callTransaction(
+                smartContractConfig.getContractAddress().getMintToken(),
+                systemCredentials,
+                new Function(
+                        "setApprovalForAll",
+                        List.of(
+                                new Address(smartContractConfig.getContractAddress().getSaleToken()),
+                                new Bool(true)
+                        ),
+                        List.of(new TypeReference<Type>() {})
+                )
         );
-        return smartContractClient.callTransaction(mintTokenContractAddress, Credentials.create(privateKey), setSaleLozmTokenFunction);
+    }
+
+    private EthSendTransaction isApprovedForAll(Credentials systemCredentials) {
+        return smartContractClient.callTransaction(
+                smartContractConfig.getContractAddress().getMintToken(),
+                systemCredentials,
+                new Function(
+                        "isApprovedForAll",
+                        List.of(
+                                new Address(systemCredentials.getAddress()),
+                                new Address(smartContractConfig.getContractAddress().getSaleToken())
+                        ),
+                        List.of(new TypeReference<Type>() {})
+                )
+        );
+    }
+
+    private EthSendTransaction setSaleLozmToken(Credentials systemCredentials) {
+        return smartContractClient.callTransaction(
+                smartContractConfig.getContractAddress().getMintToken(),
+                systemCredentials,
+                new Function(
+                        "setSaleLozmToken",
+                        List.of(new Address(smartContractConfig.getContractAddress().getSaleToken())),
+                        List.of(new TypeReference<Type>() {})
+                )
+        );
+    }
+
+    private void validateInitialSetting(EthSendTransaction ethSendTransaction, String errorMessage) {
+        if (ethSendTransaction.hasError()) {
+            throw new IllegalStateException(format("스마트 컨트랙트 초기 세팅에 실패하였습니다. 이유: %s", errorMessage));
+        }
     }
 
     private List<ContractListVo.Detail> getTokens(Credentials credentials) {
@@ -97,12 +130,22 @@ public class ContractServiceImpl implements ContractService {
                 List.of(new Address(credentials.getAddress())),
                 List.of(new TypeReference<DynamicArray<ContractListVo.Detail>>() {})
         );
-        EthCall ethCall = smartContractClient.callViewFunction(mintTokenContractAddress, credentials, getTokensFunction);
+        EthCall ethCall = smartContractClient.callViewFunction(smartContractConfig.getContractAddress().getMintToken(), credentials, getTokensFunction);
+
         List<Type> decodedOutputParameterList = FunctionReturnDecoder.decode(ethCall.getValue(), getTokensFunction.getOutputParameters());
         if (decodedOutputParameterList.isEmpty()) {
-            throw new IllegalStateException();
+            throw new BadRequestException(CustomExceptionType.INVALID_REQUEST_PARAMETERS);
         }
-        List<ContractListVo.Detail> resultList = (List<ContractListVo.Detail>) decodedOutputParameterList.get(0).getValue();
+
+        List<ContractListVo.Detail> resultList;
+
+        try {
+            resultList = (List<ContractListVo.Detail>) decodedOutputParameterList.get(0).getValue();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR, e);
+        }
+
         return resultList;
     }
 

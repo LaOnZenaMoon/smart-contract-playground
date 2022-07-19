@@ -1,10 +1,9 @@
 package me.lozm.app.contract.service;
 
 import lombok.extern.slf4j.Slf4j;
-import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
-import org.junit.jupiter.api.Disabled;
+import me.lozm.global.config.SmartContractConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.io.IOException;
 
@@ -32,18 +29,18 @@ class ContractServiceImplTest {
     private ContractService contractService;
 
     @Autowired
-    private SmartContractClient smartContractClient;
+    private SmartContractConfig smartContractConfig;
 
 
-    @Disabled
+    // @Disabled
     @DisplayName("mint token 성공")
     @ParameterizedTest(name = "{index}. {displayName} 입력값={0}")
     @ValueSource(strings = {"hello.txt", "sample.jpg"})
     void mintToken_success(final String fileName) throws IOException {
         // Given
-        final String senderSecretKey = "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d";
-        ClassPathResource classPathResource = new ClassPathResource("ipfs/" + fileName);
-        ContractMintVo.Request requestVo = new ContractMintVo.Request(senderSecretKey, classPathResource.getFile());
+        final String systemPrivateKey = smartContractConfig.getEoa().getSystemPrivateKey();
+        ClassPathResource sampleClassPathResource = new ClassPathResource("ipfs/" + fileName);
+        ContractMintVo.Request requestVo = new ContractMintVo.Request(systemPrivateKey, sampleClassPathResource.getFile());
 
         // When
         ContractMintVo.Response responseVo = contractService.mintToken(requestVo);
@@ -52,36 +49,21 @@ class ContractServiceImplTest {
         assertTrue(isNotBlank(responseVo.getTokenUrl()));
     }
 
-    @Disabled
-    @DisplayName("SaleLozmToken 스마트 컨트랙트 등록 및 트랜잭션 결과 조회 성공")
-    @Test
-    void setSaleLozmToken_getTransactionReceipt_success() {
-        // Given
-        final String senderSecretKey = "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d";
-
-        // When
-        EthSendTransaction ethSendTransaction = contractService.setSaleLozmToken(senderSecretKey);
-        String transactionHash = ethSendTransaction.getTransactionHash();
-        TransactionReceipt transactionReceipt = smartContractClient.getTransactionReceipt(transactionHash);
-        log.info(transactionReceipt.toString());
-
-        // Then
-        assertFalse(ethSendTransaction.hasError());
-        assertTrue(transactionReceipt.isStatusOK());
-    }
-
-    @Disabled
+    // @Disabled
     @DisplayName("EOA token 조회 성공")
     @Test
-    void getTokens_success() {
+    void getTokens_success() throws IOException {
         // Given
-        final String senderSecretKey = "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d";
+        final String systemPrivateKey = smartContractConfig.getEoa().getSystemPrivateKey();
+        ClassPathResource sampleClassPathResource = new ClassPathResource("ipfs/sample.jpg");
 
         // When
-        ContractListVo.Response responseVo = contractService.getTokens(new ContractListVo.Request(senderSecretKey));
+        contractService.mintToken(new ContractMintVo.Request(systemPrivateKey, sampleClassPathResource.getFile()));
+        ContractListVo.Response listResponseVo = contractService.getTokens(new ContractListVo.Request(systemPrivateKey));
 
         // Then
-        assertTrue(isNotEmpty(responseVo));
+        assertTrue(isNotEmpty(listResponseVo));
+        assertFalse(listResponseVo.getTokenList().isEmpty());
     }
 
 }

@@ -134,6 +134,44 @@ public class SmartContractClientImpl implements SmartContractClient {
         }
     }
 
+    @Override
+    public EthSendTransaction callTransactionFunction(String contractAddress, Credentials senderCredentials, BigInteger messageValue, Function web3jFunction) {
+        validateSmartContractAddress(contractAddress);
+
+        Web3j web3j = createWeb3j();
+
+        try {
+            Transaction functionCallTransaction = Transaction.createFunctionCallTransaction(
+                    senderCredentials.getAddress(), // from
+                    web3j.ethGetTransactionCount(senderCredentials.getAddress(), DefaultBlockParameterName.LATEST).send().getTransactionCount(), // nonce
+                    Transaction.DEFAULT_GAS, // gasPrice
+                    new BigInteger(smartContractConfig.getGasLimit()), //gasLimit
+                    contractAddress, // to
+                    messageValue, // msg.value
+                    FunctionEncoder.encode(web3jFunction) // data
+            );
+
+            EthSendTransaction ethSendTransaction = web3j.ethSendTransaction(functionCallTransaction).sendAsync().get();
+            if (ethSendTransaction.hasError()) {
+                throw new BadRequestException(CustomExceptionType.INVALID_REQUEST_PARAMETERS);
+            }
+
+            return ethSendTransaction;
+
+        } catch (IOException | ExecutionException e) {
+            log.error(e.getMessage());
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT, e);
+
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+            Thread.currentThread().interrupt();
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT, e);
+
+        } finally {
+            web3j.shutdown();
+        }
+    }
+
     @NotNull
     private Web3j createWeb3j() {
         return Web3j.build(new HttpService());

@@ -7,6 +7,7 @@ import me.lozm.app.contract.client.IpfsClient;
 import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
+import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.IpfsConfig;
 import me.lozm.global.config.SmartContractConfig;
@@ -95,6 +96,23 @@ public class ContractServiceImpl implements ContractService {
         return new ContractSellVo.Response(setForSaleTokenResponse.getTransactionHash());
     }
 
+    @Override
+    public ContractPurchaseVo.Response purchaseToken(ContractPurchaseVo.Request requestVo) {
+        EthSendTransaction purchaseTokenResponse = smartContractClient.callTransactionFunction(
+                smartContractConfig.getContractAddress().getSaleToken(),
+                Credentials.create(requestVo.getPrivateKey()),
+                requestVo.getTokenPrice(),
+                new Function(
+                        "purchaseToken",
+                        List.of(
+                                new Uint256(requestVo.getTokenId())
+                        ),
+                        List.of(new TypeReference<Type>() {
+                        })
+                )
+        );
+        return new ContractPurchaseVo.Response(purchaseTokenResponse.getTransactionHash());
+    }
 
     private EthSendTransaction setApprovalForAll(Credentials systemCredentials) {
         return smartContractClient.callTransactionFunction(

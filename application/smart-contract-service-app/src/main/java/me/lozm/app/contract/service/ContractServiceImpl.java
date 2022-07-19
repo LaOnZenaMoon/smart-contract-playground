@@ -83,7 +83,7 @@ public class ContractServiceImpl implements ContractService {
                 smartContractConfig.getContractAddress().getSaleToken(),
                 Credentials.create(requestVo.getPrivateKey()),
                 new Function(
-                        "setForSaleToken",
+                        "sellToken",
                         List.of(
                                 new Uint256(requestVo.getTokenId()),
                                 new Uint256(requestVo.getTokenPrice())

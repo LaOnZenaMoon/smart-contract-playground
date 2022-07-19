@@ -15,7 +15,7 @@ contract SaleLozmToken {
         mintTokenAddress = MintLozmToken(_mintTokenAddress);
     }
 
-    function setForSaleToken(uint256 _tokenId, uint256 _price) public {
+    function sellToken(uint256 _tokenId, uint256 _price) public {
         address tokenOwner = mintTokenAddress.ownerOf(_tokenId);
 
         require(tokenOwner == msg.sender, "Caller is not token owner.");

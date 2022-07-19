@@ -43,12 +43,15 @@ public class ContractServiceImpl implements ContractService {
     public void initialize() {
         Credentials systemCredentials = Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey());
 
+        log.info("setApprovalForAll function 호출");
         EthSendTransaction setApprovalForAllTransaction = setApprovalForAll(systemCredentials);
         validateInitialSetting(setApprovalForAllTransaction, "setApprovalForAll");
 
+        log.info("isApprovedForAll function 호출");
         EthSendTransaction approvedForAllTransaction = isApprovedForAll(systemCredentials);
         validateInitialSetting(approvedForAllTransaction, "isApprovedForAll");
 
+        log.info("isApprovedForAll function 호출");
         EthSendTransaction setSaleLozmTokenTransaction = setSaleLozmToken(systemCredentials);
         validateInitialSetting(setSaleLozmTokenTransaction, "setSaleLozmToken");
     }
@@ -74,7 +77,12 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractListVo.Response getTokens(ContractListVo.Request requestVo) {
-        List<ContractListVo.Detail> resultList = getTokens(Credentials.create(requestVo.getPrivateKey()));
+        Credentials senderCredentials = Credentials.create(requestVo.getPrivateKey());
+
+        EthSendTransaction setSaleLozmTokenTransaction = setSaleLozmToken(senderCredentials);
+        validateInitialSetting(setSaleLozmTokenTransaction, "setSaleLozmToken");
+
+        List<ContractListVo.Detail> resultList = getTokens(senderCredentials);
         return new ContractListVo.Response(resultList);
     }
 

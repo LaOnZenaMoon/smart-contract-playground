@@ -1,8 +1,8 @@
 smart-contracts:
   gas-limit: 1537000
   contract-address:
-    mint-token: "0xC1eA2479cF33a7bD25C23Ad6c6112009fCb2A70a"
-    sale-token: "0x16d079208ca7bdbD8a9007BBD8103751e1F169c1"
+    mint-token: "0xA15CB13cFB8E3Fb4696fb32136918fcca2da1E24"
+    sale-token: "0x0c7f3d7555286736d5A8d8d1e719976807501F0e"
   eoa:
     system-private-key: "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d"
     sample-private-key: "606ec4972e7222e3d05b08e28648fea50feed7d6f0c9549c7960c724907c1a8d"

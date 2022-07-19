@@ -7,6 +7,7 @@ import me.lozm.app.contract.vo.ContractMintVo;
 import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.SmartContractConfig;
+import me.lozm.utils.exception.BadRequestException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,8 +24,7 @@ import java.util.List;
 
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @ActiveProfiles("local")
@@ -127,10 +127,10 @@ class ContractServiceImplTest {
         log.info("1. mint token");
         contractService.mintToken(new ContractMintVo.Request(systemPrivateKey, sampleClassPathResource.getFile()));
 
-        log.info("2. token 목록 조회");
-        ContractListVo.Response listResponseVo = contractService.getTokens(new ContractListVo.Request(systemPrivateKey));
-        List<ContractListVo.Detail> tokenList = listResponseVo.getTokenList();
-        ContractListVo.Detail mintTokenDetail = tokenList.get(tokenList.size() - 1);
+        log.info("2. token 판매자의 token 목록 조회");
+        ContractListVo.Response listResponseVo1 = contractService.getTokens(new ContractListVo.Request(systemPrivateKey));
+        List<ContractListVo.Detail> tokenList1 = listResponseVo1.getTokenList();
+        ContractListVo.Detail mintTokenDetail = tokenList1.get(tokenList1.size() - 1);
         final String tokenId = mintTokenDetail.getTokenId().toString();
 
         log.info("3. token 판매 등록");
@@ -140,16 +140,22 @@ class ContractServiceImplTest {
         TransactionReceipt sellTransactionReceipt = smartContractClient.getTransactionReceipt(sellResponseVo.getTransactionHash());
         log.info(sellTransactionReceipt.toString());
 
-        log.info("5. token 구매");
+        log.info("5. token 구매예정자의 token 목록 조회");
+        assertThrows(BadRequestException.class, () -> contractService.getTokens(new ContractListVo.Request(samplePrivateKey)));
+
+        log.info("6. token 구매");
         ContractPurchaseVo.Response purchaseResponseVo = contractService.purchaseToken(new ContractPurchaseVo.Request(samplePrivateKey, tokenId, tokenPrice));
 
-        log.info("6. token 구매 트랜잭션 조회");
+        log.info("7. token 구매 트랜잭션 조회");
         TransactionReceipt purchaseTransactionReceipt = smartContractClient.getTransactionReceipt(sellResponseVo.getTransactionHash());
         log.info(purchaseTransactionReceipt.toString());
 
+        log.info("8. token 구매자의 token 목록 조회");
+        ContractListVo.Response listResponseVo2 = contractService.getTokens(new ContractListVo.Request(samplePrivateKey));
+
         // Then
-        assertTrue(isNotEmpty(listResponseVo));
-        assertFalse(listResponseVo.getTokenList().isEmpty());
+        assertTrue(isNotEmpty(listResponseVo1));
+        assertFalse(listResponseVo1.getTokenList().isEmpty());
 
         assertTrue(isNotEmpty(sellResponseVo));
         assertTrue(isNotBlank(sellResponseVo.getTransactionHash()));
@@ -160,6 +166,9 @@ class ContractServiceImplTest {
         assertTrue(isNotBlank(purchaseResponseVo.getTransactionHash()));
 
         assertTrue(purchaseTransactionReceipt.isStatusOK());
+
+        assertTrue(isNotEmpty(listResponseVo2));
+        assertFalse(listResponseVo2.getTokenList().isEmpty());
     }
 
 }

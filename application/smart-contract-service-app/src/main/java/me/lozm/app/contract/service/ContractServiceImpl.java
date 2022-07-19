@@ -1,10 +1,9 @@
 package me.lozm.app.contract.service;
 
-import io.ipfs.api.IPFS;
-import io.ipfs.api.MerkleNode;
-import io.ipfs.api.NamedStreamable;
 import io.ipfs.multihash.Multihash;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.lozm.app.contract.client.IpfsClient;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
 import org.apache.commons.lang3.StringUtils;
@@ -26,10 +25,8 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -38,13 +35,13 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ContractServiceImpl implements ContractService {
+
+    private final IpfsClient ipfsClient;
 
     @Value("${ipfs.prefix-url}")
     private String ipfsPrefixUrl;
-
-    @Value("${ipfs.address}")
-    private String ipfsAddress;
 
     @Value("${smart-contracts.mint-token-contract-address}")
     private String mintTokenContractAddress;
@@ -55,14 +52,22 @@ public class ContractServiceImpl implements ContractService {
     private Web3j web3j;
 
     @PostConstruct
-    public void init() {
+    public void initialize() {
         web3j = Web3j.build(new HttpService());
         validateSmartContractAddress();
+        initializeContracts();
+    }
+
+    private void initializeContracts() {
+        //TODO 스마트 컨트랙트 초기 세팅
+        // 1. MintLozmToken.setApprovalForAll(SaleLozmToken.sol address, true)
+        // 2. MintLozmToken.isApprovedForAll(EOA address, SaleLozmToken.sol address)
+        // 3. MintLozmToken.setSaleLozmToken(EOA address)
     }
 
     @Override
     public ContractMintVo.Response mintToken(ContractMintVo.Request requestVo) {
-        Multihash multihash = addFileOnIpfs(requestVo.getFile());
+        Multihash multihash = ipfsClient.add(requestVo.getFile());
 
         Function mintTokenFunction = new Function(
                 "mintToken",
@@ -193,26 +198,6 @@ public class ContractServiceImpl implements ContractService {
         } catch (InterruptedException e) {
             log.error(e.getMessage());
             Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Multihash addFileOnIpfs(File file) {
-        try {
-            IPFS ipfs = new IPFS(ipfsAddress);
-            NamedStreamable.ByteArrayWrapper byteArrayWrapper = new NamedStreamable.ByteArrayWrapper(
-                    file.getName(), Files.readAllBytes(file.toPath()));
-            List<MerkleNode> addList = ipfs.add(byteArrayWrapper, true);
-
-            if (addList.isEmpty()) {
-                throw new IllegalArgumentException("IPFS 파일 등록에 실패하였습니다.");
-            }
-
-            log.info(format(ipfsPrefixUrl, addList.get(0).hash));
-
-            return addList.get(0).hash;
-        } catch (IOException e) {
-            log.error(e.getMessage());
             throw new RuntimeException(e);
         }
     }

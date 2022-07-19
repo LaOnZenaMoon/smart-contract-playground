@@ -9,6 +9,10 @@
 #### smart-contract-service-app
 * The server for smart-contract operations
 
+### core
+#### core-utils
+* The module for common utilities
+
 ## Skills
 * Solidity
 * OpenZeppelin

@@ -13,6 +13,9 @@
 #### core-utils
 * The module for common utilities
 
+#### core-web
+* The module for common web configurations
+
 ## Skills
 * Solidity
 * OpenZeppelin
@@ -46,3 +49,5 @@
   $ ipfs init
   $ ipfs daemon
   ```
+* Java 11
+* Spring Boot 2.5.x

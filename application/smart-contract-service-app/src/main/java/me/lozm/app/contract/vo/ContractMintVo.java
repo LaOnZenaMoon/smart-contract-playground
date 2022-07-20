@@ -11,14 +11,14 @@ public class ContractMintVo {
     @Getter
     public static class Request {
         private final String privateKey;
-        private final File file;
+        private final File uploadFile;
 
-        public Request(String privateKey, File file) {
+        public Request(String privateKey, File uploadFile) {
             Assert.hasLength(privateKey, "요청자의 개인키 정보는 비어있을 수 없습니다.");
-            Assert.notNull(file, "등록할 NFT 파일은 null 일 수 없습니다.");
+            Assert.notNull(uploadFile, "등록할 NFT 파일은 null 일 수 없습니다.");
 
             this.privateKey = privateKey;
-            this.file = file;
+            this.uploadFile = uploadFile;
         }
     }
 

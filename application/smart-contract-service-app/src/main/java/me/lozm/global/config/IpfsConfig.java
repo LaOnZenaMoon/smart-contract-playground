@@ -13,5 +13,6 @@ public class IpfsConfig {
 
     private String prefixUrl;
     private String address;
+    private String tempUploadPath;
 
 }

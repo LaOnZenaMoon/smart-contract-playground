@@ -59,7 +59,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractMintVo.Response mintToken(ContractMintVo.Request requestVo) {
-        Multihash multihash = ipfsClient.add(requestVo.getFile());
+        Multihash multihash = ipfsClient.add(requestVo.getUploadFile());
 
         smartContractClient.callTransactionFunction(
                 smartContractConfig.getContractAddress().getMintToken(),

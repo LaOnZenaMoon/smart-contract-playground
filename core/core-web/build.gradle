@@ -1,0 +1,10 @@
+jar.enabled(true)
+bootJar.enabled(false)
+
+dependencies {
+    implementation project(':core:core-utils')
+
+    api 'javax.validation:validation-api'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+    api 'org.springframework.boot:spring-boot-starter-web'
+}

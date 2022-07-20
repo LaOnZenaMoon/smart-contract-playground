@@ -78,7 +78,7 @@ public class SmartContractClientImpl implements SmartContractClient {
 
             EthCall ethCall = web3j.ethCall(functionCallTransaction, DefaultBlockParameterName.LATEST).sendAsync().get();
             if (ethCall.hasError()) {
-                throw new BadRequestException(CustomExceptionType.INVALID_REQUEST_PARAMETERS);
+                throw new IllegalArgumentException(ethCall.getError().getMessage());
             }
 
             return ethCall;
@@ -115,7 +115,7 @@ public class SmartContractClientImpl implements SmartContractClient {
 
             EthSendTransaction ethSendTransaction = web3j.ethSendTransaction(functionCallTransaction).sendAsync().get();
             if (ethSendTransaction.hasError()) {
-                throw new BadRequestException(CustomExceptionType.INVALID_REQUEST_PARAMETERS);
+                throw new IllegalArgumentException(ethSendTransaction.getError().getMessage());
             }
 
             return ethSendTransaction;
@@ -153,7 +153,7 @@ public class SmartContractClientImpl implements SmartContractClient {
 
             EthSendTransaction ethSendTransaction = web3j.ethSendTransaction(functionCallTransaction).sendAsync().get();
             if (ethSendTransaction.hasError()) {
-                throw new BadRequestException(CustomExceptionType.INVALID_REQUEST_PARAMETERS);
+                throw new IllegalArgumentException(ethSendTransaction.getError().getMessage());
             }
 
             return ethSendTransaction;

@@ -7,4 +7,6 @@ dependencies {
     api 'javax.validation:validation-api'
     api 'org.springframework.boot:spring-boot-starter-validation'
     api 'org.springframework.boot:spring-boot-starter-web'
+
+    api 'org.springdoc:springdoc-openapi-ui:1.5.13'
 }

@@ -42,42 +42,42 @@ public class ContractController {
     private final IpfsConfig ipfsConfig;
 
 
-    @PostMapping(value = "mint", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CommonResponseDto<ContractMintDto.Response>> mintToken(
-            @RequestPart("request-dto") @Validated ContractMintDto.Request requestDto,
-            @RequestPart("upload-file") MultipartFile multipartFile) {
+    @PostMapping(value = "mint", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<CommonResponseDto<ContractMintDto.MintResponse>> mintToken(
+            @RequestPart("requestDto") @Validated ContractMintDto.MintRequest requestDto,
+            @RequestPart("uploadFile") MultipartFile uploadFile) {
 
-        File file = uploadTempFile(multipartFile);
+        File file = uploadTempFile(uploadFile);
         ContractMintVo.Request requestVo = contractMapper.toMintVo(file, requestDto);
         ContractMintVo.Response responseVo = contractService.mintToken(requestVo);
-        ContractMintDto.Response responseDto = contractMapper.toMintDto(responseVo);
+        ContractMintDto.MintResponse responseDto = contractMapper.toMintDto(responseVo);
         return CommonResponseDto.created(responseDto);
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponseDto<ContractListDto.Response>> getTokens(@RequestParam("privateKey") String privateKey) {
+    public ResponseEntity<CommonResponseDto<ContractListDto.ListResponse>> getTokens(@RequestParam("privateKey") String privateKey) {
         ContractListVo.Response responseVo = contractService.getTokens(new ContractListVo.Request(privateKey));
 
-        List<ContractListDto.Detail> tokenList = responseVo.getTokenList()
+        List<ContractListDto.ListDetail> tokenList = responseVo.getTokenList()
                 .stream()
-                .map(vo -> new ContractListDto.Detail(vo.getTokenId(), format(ipfsConfig.getPrefixUrl(), vo.getTokenUrl()), vo.getTokenPrice()))
+                .map(vo -> new ContractListDto.ListDetail(vo.getTokenId(), format(ipfsConfig.getPrefixUrl(), vo.getTokenUrl()), vo.getTokenPrice()))
                 .collect(toList());
-        return CommonResponseDto.ok(new ContractListDto.Response(tokenList));
+        return CommonResponseDto.ok(new ContractListDto.ListResponse(tokenList));
     }
 
     @PostMapping("{tokenId}/sell")
-    public ResponseEntity<CommonResponseDto<ContractSellDto.Response>> sellToken(@PathVariable("tokenId") String tokenId, @RequestBody @Validated ContractSellDto.Request requestDto) {
+    public ResponseEntity<CommonResponseDto<ContractSellDto.SellResponse>> sellToken(@PathVariable("tokenId") String tokenId, @RequestBody @Validated ContractSellDto.SellRequest requestDto) {
         ContractSellVo.Request requestVo = contractMapper.toSellVo(tokenId, requestDto);
         ContractSellVo.Response responseVo = contractService.sellToken(requestVo);
-        ContractSellDto.Response responseDto = contractMapper.toSellDto(responseVo);
+        ContractSellDto.SellResponse responseDto = contractMapper.toSellDto(responseVo);
         return CommonResponseDto.created(responseDto);
     }
 
     @PostMapping("{tokenId}/purchase")
-    public ResponseEntity<CommonResponseDto<ContractPurchaseDto.Response>> purchaseToken(@PathVariable("tokenId") String tokenId, @RequestBody @Validated ContractPurchaseDto.Request requestDto) {
+    public ResponseEntity<CommonResponseDto<ContractPurchaseDto.PurchaseResponse>> purchaseToken(@PathVariable("tokenId") String tokenId, @RequestBody @Validated ContractPurchaseDto.PurchaseRequest requestDto) {
         ContractPurchaseVo.Request requestVo = contractMapper.toPurchaseVo(tokenId, requestDto);
         ContractPurchaseVo.Response responseVo = contractService.purchaseToken(requestVo);
-        ContractPurchaseDto.Response responseDto = contractMapper.toPurchaseDto(responseVo);
+        ContractPurchaseDto.PurchaseResponse responseDto = contractMapper.toPurchaseDto(responseVo);
         return CommonResponseDto.created(responseDto);
     }
 

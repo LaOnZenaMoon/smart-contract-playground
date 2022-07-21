@@ -1,3 +1,51 @@
+plugins {
+//    id "org.web3j" version "4.9.2"
+//    id "org.web3j.solidity" version "0.3.5"
+}
+
+//solidity {
+//    evmVersion = 'ISTANBUL'
+//}
+//
+//web3j {
+//    generatedPackageName = 'me.lozm.solidity.{0}'
+//    includedContracts = ['MintLozmToken', 'SaleLozmToken']
+//}
+
+//task cleanAndCopySolidity {
+////    dependsOn build
+//    group = 'other'
+//
+//    doFirst {
+//        println '===== start delete previous solidity ====='
+//        delete file('src/main/solidity')
+//        println '===== finish delete previous solidity ====='
+//    }
+//
+//    doLast {
+//        copy {
+//            println '===== start copy solidity ====='
+//            from file("${project.rootDir}/contracts/nft-market/contracts")
+//            into file('src/main/solidity/contracts')
+//            println '===== finish copy solidity ====='
+//        }
+//
+////        copy {
+////            println '===== start copy package.json ====='
+////            from file("${project.rootDir}/contracts/nft-market/package.json")
+////            into file('src/main/solidity')
+////            println '===== finish copy package.json ====='
+////        }
+////
+////        copy {
+////            println '===== start copy node modules ====='
+////            from file("${project.rootDir}/contracts/nft-market/node_modules")
+////            into file('src/main/solidity/node_modules')
+////            println '===== finish copy node modules ====='
+////        }
+//    }
+//}
+
 dependencies {
     implementation project(':core:core-utils')
     implementation project(':core:core-web')

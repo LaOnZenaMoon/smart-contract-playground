@@ -9,7 +9,7 @@ public class ContractSellDto {
 
     @Getter
     @NoArgsConstructor
-    public static class Request {
+    public static class SellRequest {
         @NotBlank
         private String privateKey;
         @NotBlank
@@ -19,7 +19,7 @@ public class ContractSellDto {
     @Getter
     @ToString
     @AllArgsConstructor
-    public static class Response {
+    public static class SellResponse {
         private final String transactionHash;
     }
 

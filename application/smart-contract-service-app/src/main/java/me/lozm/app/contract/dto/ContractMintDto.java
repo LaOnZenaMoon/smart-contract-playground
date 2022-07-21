@@ -14,7 +14,7 @@ public class ContractMintDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Request {
+    public static class MintRequest {
         @NotBlank
         private String privateKey;
     }
@@ -22,7 +22,7 @@ public class ContractMintDto {
     @Getter
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Response {
+    public static class MintResponse {
         private final String tokenUrl;
     }
 

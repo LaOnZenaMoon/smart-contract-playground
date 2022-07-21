@@ -16,21 +16,25 @@ public interface ContractMapper {
 
     @Mapping(source = "uploadFile", target = "uploadFile")
     @Mapping(source = "requestDto.privateKey", target = "privateKey")
-    ContractMintVo.Request toMintVo(File uploadFile, ContractMintDto.Request requestDto);
+    ContractMintVo.Request toMintVo(File uploadFile, ContractMintDto.MintRequest requestDto);
 
-    ContractMintDto.Response toMintDto(ContractMintVo.Response responseVo);
-
-    @Mapping(source = "tokenId", target = "tokenId")
-    @Mapping(source = "requestDto.privateKey", target = "privateKey")
-    @Mapping(source = "requestDto.tokenPrice", target = "tokenPrice")
-    ContractSellVo.Request toSellVo(String tokenId, ContractSellDto.Request requestDto);
-
-    ContractSellDto.Response toSellDto(ContractSellVo.Response responseVo);
+    ContractMintDto.MintResponse toMintDto(ContractMintVo.Response responseVo);
 
     @Mapping(source = "tokenId", target = "tokenId")
     @Mapping(source = "requestDto.privateKey", target = "privateKey")
     @Mapping(source = "requestDto.tokenPrice", target = "tokenPrice")
-    ContractPurchaseVo.Request toPurchaseVo(String tokenId, ContractPurchaseDto.Request requestDto);
+    ContractSellVo.Request toSellVo(String tokenId, ContractSellDto.SellRequest requestDto);
 
-    ContractPurchaseDto.Response toPurchaseDto(ContractPurchaseVo.Response responseVo);
+    ContractSellDto.SellResponse toSellDto(ContractSellVo.Response responseVo);
+
+    @Mapping(source = "tokenId", target = "tokenId")
+    @Mapping(source = "requestDto.privateKey", target = "privateKey")
+    @Mapping(source = "requestDto.tokenPrice", target = "tokenPrice")
+    ContractPurchaseVo.Request toPurchaseVo(String tokenId, ContractPurchaseDto.PurchaseRequest requestDto);
+
+    ContractPurchaseDto.PurchaseResponse toPurchaseDto(ContractPurchaseVo.Response responseVo);
+
+    @Mapping(source = "privateKey", target = "privateKey")
+    @Mapping(source = "uploadFile", target = "uploadFile")
+    ContractMintVo.Request toMintVo(String privateKey, File uploadFile);
 }

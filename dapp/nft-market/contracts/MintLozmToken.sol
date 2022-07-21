@@ -50,4 +50,5 @@ contract MintLozmToken is ERC721Enumerable {
 
         return tokenDataArray;
     }
+
 }

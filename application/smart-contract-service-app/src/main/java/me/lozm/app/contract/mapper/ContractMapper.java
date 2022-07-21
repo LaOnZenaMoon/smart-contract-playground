@@ -9,6 +9,7 @@ import me.lozm.app.contract.vo.ContractMintVo;
 import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.web3j.MintLozmToken;
+import me.lozm.web3j.SaleLozmToken;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -38,11 +39,9 @@ public interface ContractMapper {
 
     ContractPurchaseDto.PurchaseResponse toPurchaseDto(ContractPurchaseVo.Response responseVo);
 
-    @Mapping(source = "privateKey", target = "privateKey")
-    @Mapping(source = "uploadFile", target = "uploadFile")
-    ContractMintVo.Request toMintVo(String privateKey, File uploadFile);
-
     ContractListDto.ListDetail toListDto(ContractListVo.Detail vo);
 
     ContractListVo.Detail toListDetailVo(MintLozmToken.TokenData tokenData);
+
+    ContractListVo.Detail toListDetailVo(SaleLozmToken.TokenData tokenData);
 }

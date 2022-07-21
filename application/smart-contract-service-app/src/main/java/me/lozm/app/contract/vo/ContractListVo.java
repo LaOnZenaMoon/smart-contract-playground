@@ -1,25 +1,36 @@
 package me.lozm.app.contract.vo;
 
 import lombok.*;
+import me.lozm.app.contract.code.TokenSearchType;
 import me.lozm.app.contract.code.TokenStatus;
-import org.springframework.util.Assert;
+import org.modelmapper.internal.util.Assert;
 
 import java.math.BigInteger;
 import java.util.List;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContractListVo {
 
     @Getter
     public static class Request {
+        private final TokenSearchType tokenSearchType;
         private final String privateKey;
 
-        public Request(String privateKey) {
-            Assert.hasLength(privateKey, "요청자의 개인키 정보는 비어있을 수 없습니다.");
-
+        public Request(TokenSearchType tokenSearchType, String privateKey) {
+            this.tokenSearchType = isEmpty(tokenSearchType) ? TokenSearchType.ON_SALE : tokenSearchType;
             this.privateKey = privateKey;
+
+            Assert.isTrue(!validateWhenTokenSearchTypeIsPrivate(),
+                    format("토큰 검색 조회 유형이 %s 일 때, 개인키 정보는 비어있을 수 없습니다.", TokenSearchType.PRIVATE.getCode()));
+        }
+
+        private boolean validateWhenTokenSearchTypeIsPrivate() {
+            return this.tokenSearchType == TokenSearchType.PRIVATE && isBlank(privateKey);
         }
     }
 

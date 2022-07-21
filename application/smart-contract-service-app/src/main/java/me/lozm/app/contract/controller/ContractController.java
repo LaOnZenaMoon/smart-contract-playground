@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.lozm.app.contract.code.TokenSearchType;
 import me.lozm.app.contract.dto.ContractListDto;
 import me.lozm.app.contract.dto.ContractMintDto;
 import me.lozm.app.contract.dto.ContractPurchaseDto;
@@ -58,8 +59,11 @@ public class ContractController {
 
     @Operation(summary = "토큰 목록 조회")
     @GetMapping
-    public ResponseEntity<CommonResponseDto<ContractListDto.ListResponse>> getTokens(@RequestParam("privateKey") String privateKey) {
-        ContractListVo.Response responseVo = contractService.getTokens(new ContractListVo.Request(privateKey));
+    public ResponseEntity<CommonResponseDto<ContractListDto.ListResponse>> getTokens(
+            @RequestParam(value = "tokenSearchType", required = false) TokenSearchType tokenSearchType,
+            @RequestParam(value = "privateKey", required = false) String privateKey) {
+
+        ContractListVo.Response responseVo = contractService.getTokens(new ContractListVo.Request(tokenSearchType, privateKey));
 
         List<ContractListDto.ListDetail> tokenList = responseVo.getTokenList()
                 .stream()

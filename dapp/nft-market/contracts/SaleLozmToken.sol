@@ -11,6 +11,12 @@ contract SaleLozmToken {
 
     uint256[] public onSaleTokenArray;
 
+    struct TokenData {
+        uint256 tokenId;
+        string tokenUrl;
+        uint256 tokenPrice;
+    }
+
     constructor(address _mintTokenAddress) {
         mintTokenAddress = MintLozmToken(_mintTokenAddress);
     }
@@ -56,4 +62,21 @@ contract SaleLozmToken {
     function getTokenPrice(uint256 _tokenId) view public returns (uint256) {
         return tokenPrices[_tokenId];
     }
+
+    function getTokensOnSale() view public returns (TokenData[] memory) {
+        require(onSaleTokenArray.length != 0, "No tokens are on sale.");
+
+        TokenData[] memory tokenDataArray = new TokenData[](onSaleTokenArray.length);
+
+        for (uint256 i = 0; i < onSaleTokenArray.length; i++) {
+            uint256 tokenId = onSaleTokenArray[i];
+            string memory tokenUrl = mintTokenAddress.mintedTokens(tokenId);
+            uint256 tokenPrice = tokenPrices[tokenId];
+
+            tokenDataArray[i] = TokenData(tokenId, tokenUrl, tokenPrice);
+        }
+
+        return tokenDataArray;
+    }
+
 }

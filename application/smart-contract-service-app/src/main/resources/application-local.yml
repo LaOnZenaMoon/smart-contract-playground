@@ -2,8 +2,8 @@ smart-contracts:
   block-chain-network-url: http://localhost:8545
   gas-limit: 1537000
   contract-address:
-    mint-token: "0x2488CeD43B2e389d2B1De7A98A59A41fc741E395"
-    sale-token: "0x499673bFE6DC776186788cfb1ae12F876143E9d1"
+    mint-token: "0x149E7425C5815ee86409a5ECEdcA15b4CDFC066F"
+    sale-token: "0x94F8F2422EEc9CE0D466240Da747E7d18CA62679"
   eoa:
     system-private-key: "4334f409334858cae7cb2413c393f3c6435324411c8e0cdf9f987f209ccb654d"
     sample-private-key: "606ec4972e7222e3d05b08e28648fea50feed7d6f0c9549c7960c724907c1a8d"

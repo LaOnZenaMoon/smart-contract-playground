@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import me.lozm.app.contract.client.IpfsClient;
 import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.client.Web3jWrapperFunction;
+import me.lozm.app.contract.code.TokenSearchType;
+import me.lozm.app.contract.code.TokenStatus;
 import me.lozm.app.contract.mapper.ContractMapper;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
@@ -28,6 +30,7 @@ import java.util.List;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Service
@@ -58,8 +61,38 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractListVo.Response getTokens(ContractListVo.Request requestVo) {
-        List<ContractListVo.Detail> resultList = getTokens(Credentials.create(requestVo.getPrivateKey()));
+        final String senderPrivateKey = requestVo.getPrivateKey();
+        final TokenSearchType tokenSearchType = requestVo.getTokenSearchType();
+
+        List<ContractListVo.Detail> resultList;
+        if (tokenSearchType == TokenSearchType.ON_SALE) {
+            if (isBlank(senderPrivateKey)) {
+                resultList = getTokensOnSale(Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey()));
+            } else {
+                resultList = getTokensByPrivateKey(Credentials.create(senderPrivateKey)).stream()
+                        .filter(vo -> vo.getTokenStatus() == TokenStatus.SALE)
+                        .collect(toList());
+            }
+        } else if (tokenSearchType == TokenSearchType.PRIVATE) {
+            resultList = getTokensByPrivateKey(Credentials.create(senderPrivateKey));
+        } else {
+            throw new IllegalArgumentException(format("지원하지 않는 토큰 검색 유형입니다. 토큰 검색 유형: %s", tokenSearchType));
+        }
+
         return new ContractListVo.Response(resultList);
+    }
+
+    private List<ContractListVo.Detail> getTokensOnSale(Credentials senderCredentials) {
+        Web3jWrapperFunction<Web3j, List<SaleLozmToken.TokenData>> function = web3j ->
+                getSaleLozmTokenInstance(senderCredentials, web3j)
+                        .getTokensOnSale()
+                        .sendAsync()
+                        .get();
+
+        List<SaleLozmToken.TokenData> responseList = smartContractClient.callFunction(function);
+        return responseList.stream()
+                .map(contractMapper::toListDetailVo)
+                .collect(toList());
     }
 
     @Override
@@ -158,7 +191,7 @@ public class ContractServiceImpl implements ContractService {
         }
     }
 
-    private List<ContractListVo.Detail> getTokens(Credentials senderCredentials) {
+    private List<ContractListVo.Detail> getTokensByPrivateKey(Credentials senderCredentials) {
         Web3jWrapperFunction<Web3j, List<MintLozmToken.TokenData>> function = web3j ->
                 getMintLozmTokenInstance(senderCredentials, web3j)
                         .getTokens(senderCredentials.getAddress())

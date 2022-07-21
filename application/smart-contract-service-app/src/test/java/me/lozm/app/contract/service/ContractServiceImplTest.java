@@ -2,6 +2,7 @@ package me.lozm.app.contract.service;
 
 import lombok.extern.slf4j.Slf4j;
 import me.lozm.app.contract.client.SmartContractClient;
+import me.lozm.app.contract.code.TokenSearchType;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
 import me.lozm.app.contract.vo.ContractPurchaseVo;
@@ -71,7 +72,7 @@ class ContractServiceImplTest {
         contractService.mintToken(new ContractMintVo.Request(systemPrivateKey, sampleClassPathResource.getFile()));
 
         log.info("2. token 목록 조회");
-        ContractListVo.Response listResponseVo = contractService.getTokens(new ContractListVo.Request(systemPrivateKey));
+        ContractListVo.Response listResponseVo = contractService.getTokens(new ContractListVo.Request(TokenSearchType.PRIVATE, systemPrivateKey));
 
         // Then
         assertTrue(isNotEmpty(listResponseVo));
@@ -93,7 +94,7 @@ class ContractServiceImplTest {
         contractService.mintToken(new ContractMintVo.Request(systemPrivateKey, sampleClassPathResource.getFile()));
 
         log.info("2. token 목록 조회");
-        ContractListVo.Response listResponseVo = contractService.getTokens(new ContractListVo.Request(systemPrivateKey));
+        ContractListVo.Response listResponseVo = contractService.getTokens(new ContractListVo.Request(TokenSearchType.PRIVATE, systemPrivateKey));
         List<ContractListVo.Detail> tokenList = listResponseVo.getTokenList();
         ContractListVo.Detail mintTokenDetail = tokenList.get(tokenList.size() - 1);
 
@@ -128,7 +129,7 @@ class ContractServiceImplTest {
         contractService.mintToken(new ContractMintVo.Request(systemPrivateKey, sampleClassPathResource.getFile()));
 
         log.info("2. token 판매자의 token 목록 조회");
-        ContractListVo.Response listResponseVo1 = contractService.getTokens(new ContractListVo.Request(systemPrivateKey));
+        ContractListVo.Response listResponseVo1 = contractService.getTokens(new ContractListVo.Request(TokenSearchType.PRIVATE, systemPrivateKey));
         log.info(listResponseVo1.toString());
         List<ContractListVo.Detail> tokenList1 = listResponseVo1.getTokenList();
         ContractListVo.Detail mintTokenDetail = tokenList1.get(tokenList1.size() - 1);
@@ -149,7 +150,7 @@ class ContractServiceImplTest {
         log.info(purchaseTransactionReceipt.toString());
 
         log.info("7. token 구매자의 token 목록 조회");
-        ContractListVo.Response listResponseVo2 = contractService.getTokens(new ContractListVo.Request(samplePrivateKey));
+        ContractListVo.Response listResponseVo2 = contractService.getTokens(new ContractListVo.Request(TokenSearchType.PRIVATE, samplePrivateKey));
         log.info(listResponseVo2.toString());
 
         // Then

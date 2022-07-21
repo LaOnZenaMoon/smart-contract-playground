@@ -2,6 +2,7 @@ package me.lozm.app.contract.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+import me.lozm.app.contract.code.TokenStatus;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -24,11 +25,14 @@ public class ContractListDto {
         private final BigInteger tokenId;
         private final String tokenUrl;
         private final BigInteger tokenPrice;
+        private final TokenStatus tokenStatus;
 
-        public ListDetail(BigInteger tokenId, String tokenUrl, BigInteger tokenPrice) {
+        @Builder
+        public ListDetail(BigInteger tokenId, String tokenUrl, BigInteger tokenPrice, TokenStatus tokenStatus) {
             this.tokenId = tokenId;
             this.tokenUrl = tokenUrl;
             this.tokenPrice = tokenPrice;
+            this.tokenStatus = tokenStatus;
         }
     }
 

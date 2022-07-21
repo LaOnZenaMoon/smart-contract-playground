@@ -5,28 +5,29 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.lozm.app.contract.client.IpfsClient;
 import me.lozm.app.contract.client.SmartContractClient;
+import me.lozm.app.contract.client.Web3jWrapperFunction;
+import me.lozm.app.contract.mapper.ContractMapper;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
 import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.IpfsConfig;
 import me.lozm.global.config.SmartContractConfig;
-import me.lozm.utils.exception.BadRequestException;
 import me.lozm.utils.exception.CustomExceptionType;
 import me.lozm.utils.exception.InternalServerException;
+import me.lozm.web3j.MintLozmToken;
+import me.lozm.web3j.SaleLozmToken;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import org.web3j.abi.FunctionReturnDecoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.*;
-import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
-import org.web3j.protocol.core.methods.response.EthCall;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -37,41 +38,21 @@ public class ContractServiceImpl implements ContractService {
     private final SmartContractClient smartContractClient;
     private final SmartContractConfig smartContractConfig;
     private final IpfsConfig ipfsConfig;
+    private final ContractMapper contractMapper;
 
 
     @PostConstruct
     public void initialize() {
         Credentials systemCredentials = Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey());
-
-        log.info("setApprovalForAll function 호출");
-        EthSendTransaction setApprovalForAllTransaction = setApprovalForAll(systemCredentials);
-        validateInitialSetting(setApprovalForAllTransaction, "setApprovalForAll");
-
-        log.info("isApprovedForAll function 호출");
-        EthSendTransaction approvedForAllTransaction = isApprovedForAll(systemCredentials);
-        validateInitialSetting(approvedForAllTransaction, "isApprovedForAll");
-
-        log.info("isApprovedForAll function 호출");
-        EthSendTransaction setSaleLozmTokenTransaction = setSaleLozmToken(systemCredentials);
-        validateInitialSetting(setSaleLozmTokenTransaction, "setSaleLozmToken");
+        setApprovalForAll(systemCredentials);
+        isApprovedForAll(systemCredentials);
+        setSaleLozmToken(systemCredentials);
     }
-
 
     @Override
     public ContractMintVo.Response mintToken(ContractMintVo.Request requestVo) {
         Multihash multihash = ipfsClient.add(requestVo.getUploadFile());
-
-        smartContractClient.callTransactionFunction(
-                smartContractConfig.getContractAddress().getMintToken(),
-                Credentials.create(requestVo.getPrivateKey()),
-                new Function(
-                        "mintToken",
-                        List.of(new Utf8String(multihash.toString())),
-                        List.of(new TypeReference<Type>() {
-                        })
-                )
-        );
-
+        mintToken(requestVo, multihash);
         return new ContractMintVo.Response(format(ipfsConfig.getPrefixUrl(), multihash));
     }
 
@@ -83,111 +64,111 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractSellVo.Response sellToken(ContractSellVo.Request requestVo) {
-        EthSendTransaction setForSaleTokenResponse = smartContractClient.callTransactionFunction(
-                smartContractConfig.getContractAddress().getSaleToken(),
-                Credentials.create(requestVo.getPrivateKey()),
-                new Function(
-                        "sellToken",
-                        List.of(
-                                new Uint256(requestVo.getTokenId()),
-                                new Uint256(requestVo.getTokenPrice())
-                        ),
-                        List.of(new TypeReference<Type>() {
-                        })
-                )
-        );
-        return new ContractSellVo.Response(setForSaleTokenResponse.getTransactionHash());
+        Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
+                getSaleLozmTokenInstance(Credentials.create(requestVo.getPrivateKey()), web3j)
+                        .sellToken(requestVo.getTokenId(), requestVo.getTokenPrice())
+                        .sendAsync()
+                        .get();
+
+        TransactionReceipt transactionReceipt = smartContractClient.callFunction(function);
+        if (!transactionReceipt.isStatusOK()) {
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
+        }
+
+        return new ContractSellVo.Response(transactionReceipt.getTransactionHash());
     }
 
     @Override
     public ContractPurchaseVo.Response purchaseToken(ContractPurchaseVo.Request requestVo) {
-        EthSendTransaction purchaseTokenResponse = smartContractClient.callTransactionFunction(
-                smartContractConfig.getContractAddress().getSaleToken(),
-                Credentials.create(requestVo.getPrivateKey()),
-                requestVo.getTokenPrice(),
-                new Function(
-                        "purchaseToken",
-                        List.of(
-                                new Uint256(requestVo.getTokenId())
-                        ),
-                        List.of(new TypeReference<Type>() {
-                        })
-                )
-        );
-        return new ContractPurchaseVo.Response(purchaseTokenResponse.getTransactionHash());
+        Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
+                getSaleLozmTokenInstance(Credentials.create(requestVo.getPrivateKey()), web3j)
+                        .purchaseToken(requestVo.getTokenId(), requestVo.getTokenPrice())
+                        .sendAsync()
+                        .get();
+
+        TransactionReceipt transactionReceipt = smartContractClient.callFunction(function);
+        if (!transactionReceipt.isStatusOK()) {
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
+        }
+
+        return new ContractPurchaseVo.Response(transactionReceipt.getTransactionHash());
     }
 
-    private EthSendTransaction setApprovalForAll(Credentials systemCredentials) {
-        return smartContractClient.callTransactionFunction(
-                smartContractConfig.getContractAddress().getMintToken(),
-                systemCredentials,
-                new Function(
-                        "setApprovalForAll",
-                        List.of(
-                                new Address(smartContractConfig.getContractAddress().getSaleToken()),
-                                new Bool(true)
-                        ),
-                        List.of(new TypeReference<Type>() {})
-                )
-        );
+    @NotNull
+    private MintLozmToken getMintLozmTokenInstance(Credentials senderCredentials, Web3j web3j) {
+        return MintLozmToken.load(smartContractConfig.getContractAddress().getMintToken(), web3j,
+                senderCredentials, smartContractConfig.getGasProviderInstance());
     }
 
-    private EthSendTransaction isApprovedForAll(Credentials systemCredentials) {
-        return smartContractClient.callTransactionFunction(
-                smartContractConfig.getContractAddress().getMintToken(),
-                systemCredentials,
-                new Function(
-                        "isApprovedForAll",
-                        List.of(
-                                new Address(systemCredentials.getAddress()),
-                                new Address(smartContractConfig.getContractAddress().getSaleToken())
-                        ),
-                        List.of(new TypeReference<Type>() {})
-                )
-        );
+    @NotNull
+    private SaleLozmToken getSaleLozmTokenInstance(Credentials senderCredentials, Web3j web3j) {
+        return SaleLozmToken.load(smartContractConfig.getContractAddress().getSaleToken(), web3j,
+                senderCredentials, smartContractConfig.getGasProviderInstance());
     }
 
-    private EthSendTransaction setSaleLozmToken(Credentials systemCredentials) {
-        return smartContractClient.callTransactionFunction(
-                smartContractConfig.getContractAddress().getMintToken(),
-                systemCredentials,
-                new Function(
-                        "setSaleLozmToken",
-                        List.of(new Address(smartContractConfig.getContractAddress().getSaleToken())),
-                        List.of(new TypeReference<Type>() {})
-                )
-        );
-    }
+    private void mintToken(ContractMintVo.Request requestVo, Multihash multihash) {
+        Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
+                getMintLozmTokenInstance(Credentials.create(requestVo.getPrivateKey()), web3j)
+                        .mintToken(multihash.toString())
+                        .sendAsync()
+                        .get();
 
-    private void validateInitialSetting(EthSendTransaction ethSendTransaction, String errorMessage) {
-        if (ethSendTransaction.hasError()) {
-            throw new IllegalStateException(format("스마트 컨트랙트 초기 세팅에 실패하였습니다. 이유: %s", errorMessage));
+        TransactionReceipt transactionReceipt = smartContractClient.callFunction(function);
+        if (!transactionReceipt.isStatusOK()) {
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
         }
     }
 
-    private List<ContractListVo.Detail> getTokens(Credentials credentials) {
-        Function getTokensFunction = new Function(
-                "getTokens",
-                List.of(new Address(credentials.getAddress())),
-                List.of(new TypeReference<DynamicArray<ContractListVo.Detail>>() {})
-        );
-        EthCall ethCall = smartContractClient.callViewFunction(smartContractConfig.getContractAddress().getMintToken(), credentials, getTokensFunction);
+    private void setApprovalForAll(Credentials systemCredentials) {
+        Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
+                getMintLozmTokenInstance(systemCredentials, web3j)
+                        .setApprovalForAll(smartContractConfig.getContractAddress().getSaleToken(), true)
+                        .sendAsync()
+                        .get();
 
-        List<Type> decodedOutputParameterList = FunctionReturnDecoder.decode(ethCall.getValue(), getTokensFunction.getOutputParameters());
-        if (decodedOutputParameterList.isEmpty()) {
-            throw new BadRequestException(CustomExceptionType.INVALID_REQUEST_PARAMETERS);
+        TransactionReceipt transactionReceipt = smartContractClient.callFunction(function);
+        if (!transactionReceipt.isStatusOK()) {
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
         }
+    }
 
-        List<ContractListVo.Detail> resultList;
+    private void isApprovedForAll(Credentials systemCredentials) {
+        Web3jWrapperFunction<Web3j, Boolean> function = web3j ->
+                getMintLozmTokenInstance(systemCredentials, web3j)
+                        .isApprovedForAll(systemCredentials.getAddress(), smartContractConfig.getContractAddress().getSaleToken())
+                        .sendAsync()
+                        .get();
 
-        try {
-            resultList = (List<ContractListVo.Detail>) decodedOutputParameterList.get(0).getValue();
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR, e);
+        Boolean isSuccess = smartContractClient.callFunction(function);
+        if (!isSuccess) {
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
         }
+    }
 
-        return resultList;
+    private void setSaleLozmToken(Credentials systemCredentials) {
+        Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
+                getMintLozmTokenInstance(systemCredentials, web3j)
+                        .setSaleLozmToken(smartContractConfig.getContractAddress().getSaleToken())
+                        .sendAsync()
+                        .get();
+
+        TransactionReceipt transactionReceipt = smartContractClient.callFunction(function);
+        if (!transactionReceipt.isStatusOK()) {
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
+        }
+    }
+
+    private List<ContractListVo.Detail> getTokens(Credentials senderCredentials) {
+        Web3jWrapperFunction<Web3j, List<MintLozmToken.TokenData>> function = web3j ->
+                getMintLozmTokenInstance(senderCredentials, web3j)
+                        .getTokens(senderCredentials.getAddress())
+                        .sendAsync()
+                        .get();
+
+        List<MintLozmToken.TokenData> responseList = smartContractClient.callFunction(function);
+        return responseList.stream()
+                .map(contractMapper::toListDetailVo)
+                .collect(toList());
     }
 
 }

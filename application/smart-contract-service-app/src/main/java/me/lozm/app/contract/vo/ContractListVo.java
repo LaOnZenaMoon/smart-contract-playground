@@ -1,13 +1,13 @@
 package me.lozm.app.contract.vo;
 
 import lombok.*;
+import me.lozm.app.contract.code.TokenStatus;
 import org.springframework.util.Assert;
-import org.web3j.abi.datatypes.DynamicStruct;
-import org.web3j.abi.datatypes.Utf8String;
-import org.web3j.abi.datatypes.generated.Uint256;
 
 import java.math.BigInteger;
 import java.util.List;
+
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContractListVo {
@@ -32,17 +32,18 @@ public class ContractListVo {
 
     @Getter
     @ToString
-    public static class Detail extends DynamicStruct {
+    public static class Detail {
         private final BigInteger tokenId;
         private final String tokenUrl;
         private final BigInteger tokenPrice;
+        private final TokenStatus tokenStatus;
 
-        public Detail(Uint256 tokenId, Utf8String tokenUrl, Uint256 tokenPrice) {
-            super(tokenId, tokenUrl, tokenPrice);
-
-            this.tokenId = tokenId.getValue();
-            this.tokenUrl = tokenUrl.getValue();
-            this.tokenPrice = tokenPrice.getValue();
+        public Detail(BigInteger tokenId, String tokenUrl, BigInteger tokenPrice) {
+            this.tokenId = tokenId;
+            this.tokenUrl = tokenUrl;
+            this.tokenPrice = tokenPrice;
+            this.tokenStatus = isNotEmpty(this.tokenPrice) && this.tokenPrice.compareTo(BigInteger.ZERO) > 0 ?
+                    TokenStatus.SALE : TokenStatus.NOT_SALE;
         }
     }
 

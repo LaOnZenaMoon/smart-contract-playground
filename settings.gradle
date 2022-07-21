@@ -3,3 +3,4 @@ rootProject.name = 'smart-contract-playground'
 include('application:smart-contract-service-app')
 include('core:core-utils')
 include('core:core-web')
+include('dapp')

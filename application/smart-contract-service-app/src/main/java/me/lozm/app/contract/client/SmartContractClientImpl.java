@@ -6,7 +6,6 @@ import me.lozm.global.config.SmartContractConfig;
 import me.lozm.utils.exception.BadRequestException;
 import me.lozm.utils.exception.CustomExceptionType;
 import me.lozm.utils.exception.InternalServerException;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.datatypes.Function;
@@ -18,7 +17,6 @@ import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -38,7 +36,7 @@ public class SmartContractClientImpl implements SmartContractClient {
 
     @Override
     public TransactionReceipt getTransactionReceipt(String transactionHash) {
-        Web3j web3j = createWeb3j();
+        Web3j web3j = smartContractConfig.createWeb3jInstance();
 
         try {
             EthGetTransactionReceipt ethGetTransactionReceipt = web3j.ethGetTransactionReceipt(transactionHash).sendAsync().get();
@@ -67,7 +65,7 @@ public class SmartContractClientImpl implements SmartContractClient {
     public EthCall callViewFunction(String contractAddress, Credentials senderCredentials, Function web3jFunction) {
         validateSmartContractAddress(contractAddress);
 
-        Web3j web3j = createWeb3j();
+        Web3j web3j = smartContractConfig.createWeb3jInstance();
 
         try {
             Transaction functionCallTransaction = Transaction.createEthCallTransaction(
@@ -101,7 +99,7 @@ public class SmartContractClientImpl implements SmartContractClient {
     public EthSendTransaction callTransactionFunction(String contractAddress, Credentials senderCredentials, Function web3jFunction) {
         validateSmartContractAddress(contractAddress);
 
-        Web3j web3j = createWeb3j();
+        Web3j web3j = smartContractConfig.createWeb3jInstance();
 
         try {
             Transaction functionCallTransaction = Transaction.createFunctionCallTransaction(
@@ -138,7 +136,7 @@ public class SmartContractClientImpl implements SmartContractClient {
     public EthSendTransaction callTransactionFunction(String contractAddress, Credentials senderCredentials, BigInteger messageValue, Function web3jFunction) {
         validateSmartContractAddress(contractAddress);
 
-        Web3j web3j = createWeb3j();
+        Web3j web3j = smartContractConfig.createWeb3jInstance();
 
         try {
             Transaction functionCallTransaction = Transaction.createFunctionCallTransaction(
@@ -172,9 +170,29 @@ public class SmartContractClientImpl implements SmartContractClient {
         }
     }
 
-    @NotNull
-    private Web3j createWeb3j() {
-        return Web3j.build(new HttpService());
+    public <T extends Web3j, R> R callFunction(Web3jWrapperFunction<T, R> trFunction) {
+        Web3j web3j = smartContractConfig.createWeb3jInstance();
+
+        try {
+            return trFunction.apply((T) web3j);
+
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                log.info(e.getMessage());
+                throw new IllegalArgumentException(e.getCause().getMessage());
+            }
+
+            log.error(e.getMessage());
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT, e);
+
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+            Thread.currentThread().interrupt();
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT, e);
+
+        } finally {
+            web3j.shutdown();
+        }
     }
 
     private void validateSmartContractAddress(String contractAddress) {

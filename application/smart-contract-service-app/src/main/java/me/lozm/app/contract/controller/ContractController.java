@@ -1,5 +1,7 @@
 package me.lozm.app.contract.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.lozm.app.contract.dto.ContractListDto;
@@ -14,7 +16,6 @@ import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.IpfsConfig;
 import me.lozm.global.model.CommonResponseDto;
-import me.lozm.utils.exception.BadRequestException;
 import me.lozm.utils.exception.CustomExceptionType;
 import me.lozm.utils.exception.InternalServerException;
 import org.springframework.http.MediaType;
@@ -28,10 +29,10 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.List;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
+@Tag(name = "토큰")
 @RequestMapping("tokens")
 @RestController
 @RequiredArgsConstructor
@@ -42,6 +43,7 @@ public class ContractController {
     private final IpfsConfig ipfsConfig;
 
 
+    @Operation(summary = "토큰 발급")
     @PostMapping(value = "mint", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<CommonResponseDto<ContractMintDto.MintResponse>> mintToken(
             @RequestPart("requestDto") @Validated ContractMintDto.MintRequest requestDto,
@@ -54,17 +56,19 @@ public class ContractController {
         return CommonResponseDto.created(responseDto);
     }
 
+    @Operation(summary = "토큰 목록 조회")
     @GetMapping
     public ResponseEntity<CommonResponseDto<ContractListDto.ListResponse>> getTokens(@RequestParam("privateKey") String privateKey) {
         ContractListVo.Response responseVo = contractService.getTokens(new ContractListVo.Request(privateKey));
 
         List<ContractListDto.ListDetail> tokenList = responseVo.getTokenList()
                 .stream()
-                .map(vo -> new ContractListDto.ListDetail(vo.getTokenId(), format(ipfsConfig.getPrefixUrl(), vo.getTokenUrl()), vo.getTokenPrice()))
+                .map(contractMapper::toListDto)
                 .collect(toList());
         return CommonResponseDto.ok(new ContractListDto.ListResponse(tokenList));
     }
 
+    @Operation(summary = "토큰 판매")
     @PostMapping("{tokenId}/sell")
     public ResponseEntity<CommonResponseDto<ContractSellDto.SellResponse>> sellToken(@PathVariable("tokenId") String tokenId, @RequestBody @Validated ContractSellDto.SellRequest requestDto) {
         ContractSellVo.Request requestVo = contractMapper.toSellVo(tokenId, requestDto);
@@ -73,6 +77,7 @@ public class ContractController {
         return CommonResponseDto.created(responseDto);
     }
 
+    @Operation(summary = "토큰 구매")
     @PostMapping("{tokenId}/purchase")
     public ResponseEntity<CommonResponseDto<ContractPurchaseDto.PurchaseResponse>> purchaseToken(@PathVariable("tokenId") String tokenId, @RequestBody @Validated ContractPurchaseDto.PurchaseRequest requestDto) {
         ContractPurchaseVo.Request requestVo = contractMapper.toPurchaseVo(tokenId, requestDto);
@@ -93,7 +98,7 @@ public class ContractController {
 
         } catch (FileAlreadyExistsException e) {
             log.info(e.getMessage());
-            throw new BadRequestException(CustomExceptionType.ALREADY_EXIST_UPLOAD_FILE);
+            return new File(filePath);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR, e);

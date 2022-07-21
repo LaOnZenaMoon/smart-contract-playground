@@ -2,7 +2,7 @@
 * Deal with smart contracts about Blockchain
 
 ## Project structure
-### contracts
+### dapp
 * The module for smart contracts
 
 ### application
@@ -52,3 +52,5 @@
 * Java 11
 * Spring Boot 2.5.x
 * Swagger
+* [web3j-gradle-plugin](https://github.com/web3j/web3j-gradle-plugin)
+* [solidity-gradle-plugin](https://github.com/web3j/solidity-gradle-plugin)

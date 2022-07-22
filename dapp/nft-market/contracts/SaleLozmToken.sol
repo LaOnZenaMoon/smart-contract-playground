@@ -34,7 +34,7 @@ contract SaleLozmToken {
         onSaleTokenArray.push(_tokenId);
     }
 
-    function purchaseToken(uint256 _tokenId) public payable {
+    function buyToken(uint256 _tokenId) public payable {
         uint256 price = tokenPrices[_tokenId];
         address tokenOwner = mintTokenAddress.ownerOf(_tokenId);
 

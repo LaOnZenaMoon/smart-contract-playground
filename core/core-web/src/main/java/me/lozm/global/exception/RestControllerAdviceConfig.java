@@ -8,6 +8,7 @@ import me.lozm.utils.exception.InternalServerException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -54,6 +55,12 @@ public class RestControllerAdviceConfig {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     protected ResponseEntity<CommonResponseDto<Object>> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
         log.info(">> handleMissingServletRequestParameterException, message: {}", e.getMessage());
+        return CommonResponseDto.badRequest(e.getMessage());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    protected ResponseEntity<CommonResponseDto<Object>> handleHttpMessageNotReadableException(final HttpMessageNotReadableException e) {
+        log.info(">> HttpMessageNotReadableException, message: {}", e.getMessage());
         return CommonResponseDto.badRequest(e.getMessage());
     }
 

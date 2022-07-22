@@ -8,7 +8,7 @@ import org.springframework.util.Assert;
 import java.math.BigInteger;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ContractPurchaseVo {
+public class ContractBuyVo {
 
     @Getter
     public static class Request {

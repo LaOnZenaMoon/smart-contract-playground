@@ -8,10 +8,9 @@ import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.client.Web3jWrapperFunction;
 import me.lozm.app.contract.code.TokenSearchType;
 import me.lozm.app.contract.code.TokenStatus;
-import me.lozm.app.contract.mapper.ContractMapper;
+import me.lozm.app.contract.vo.ContractBuyVo;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
-import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.IpfsConfig;
 import me.lozm.global.config.SmartContractConfig;
@@ -41,7 +40,6 @@ public class ContractServiceImpl implements ContractService {
     private final SmartContractClient smartContractClient;
     private final SmartContractConfig smartContractConfig;
     private final IpfsConfig ipfsConfig;
-    private final ContractMapper contractMapper;
 
 
     @PostConstruct
@@ -91,7 +89,7 @@ public class ContractServiceImpl implements ContractService {
 
         List<SaleLozmToken.TokenData> responseList = smartContractClient.callFunction(function);
         return responseList.stream()
-                .map(contractMapper::toListDetailVo)
+                .map(vo -> new ContractListVo.Detail(vo.tokenId, format(ipfsConfig.getPrefixUrl(), vo.tokenUrl), vo.tokenPrice))
                 .collect(toList());
     }
 
@@ -112,10 +110,10 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public ContractPurchaseVo.Response purchaseToken(ContractPurchaseVo.Request requestVo) {
+    public ContractBuyVo.Response buyToken(ContractBuyVo.Request requestVo) {
         Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
                 getSaleLozmTokenInstance(Credentials.create(requestVo.getPrivateKey()), web3j)
-                        .purchaseToken(requestVo.getTokenId(), requestVo.getTokenPrice())
+                        .buyToken(requestVo.getTokenId(), requestVo.getTokenPrice())
                         .sendAsync()
                         .get();
 
@@ -124,7 +122,7 @@ public class ContractServiceImpl implements ContractService {
             throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
         }
 
-        return new ContractPurchaseVo.Response(transactionReceipt.getTransactionHash());
+        return new ContractBuyVo.Response(transactionReceipt.getTransactionHash());
     }
 
     @NotNull
@@ -200,7 +198,7 @@ public class ContractServiceImpl implements ContractService {
 
         List<MintLozmToken.TokenData> responseList = smartContractClient.callFunction(function);
         return responseList.stream()
-                .map(contractMapper::toListDetailVo)
+                .map(vo -> new ContractListVo.Detail(vo.tokenId, format(ipfsConfig.getPrefixUrl(), vo.tokenUrl), vo.tokenPrice))
                 .collect(toList());
     }
 

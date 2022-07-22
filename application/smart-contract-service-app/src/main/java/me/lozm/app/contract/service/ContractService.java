@@ -1,8 +1,8 @@
 package me.lozm.app.contract.service;
 
+import me.lozm.app.contract.vo.ContractBuyVo;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
-import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 
 public interface ContractService {
@@ -13,6 +13,6 @@ public interface ContractService {
 
     ContractSellVo.Response sellToken(ContractSellVo.Request requestVo);
 
-    ContractPurchaseVo.Response purchaseToken(ContractPurchaseVo.Request requestVo);
+    ContractBuyVo.Response buyToken(ContractBuyVo.Request requestVo);
 
 }

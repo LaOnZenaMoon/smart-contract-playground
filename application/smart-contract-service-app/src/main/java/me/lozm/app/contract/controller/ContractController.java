@@ -5,15 +5,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.lozm.app.contract.code.TokenSearchType;
+import me.lozm.app.contract.dto.ContractBuyDto;
 import me.lozm.app.contract.dto.ContractListDto;
 import me.lozm.app.contract.dto.ContractMintDto;
-import me.lozm.app.contract.dto.ContractPurchaseDto;
 import me.lozm.app.contract.dto.ContractSellDto;
 import me.lozm.app.contract.mapper.ContractMapper;
 import me.lozm.app.contract.service.ContractService;
+import me.lozm.app.contract.vo.ContractBuyVo;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
-import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.IpfsConfig;
 import me.lozm.global.model.CommonResponseDto;
@@ -82,11 +82,11 @@ public class ContractController {
     }
 
     @Operation(summary = "토큰 구매")
-    @PostMapping("{tokenId}/purchase")
-    public ResponseEntity<CommonResponseDto<ContractPurchaseDto.PurchaseResponse>> purchaseToken(@PathVariable("tokenId") String tokenId, @RequestBody @Validated ContractPurchaseDto.PurchaseRequest requestDto) {
-        ContractPurchaseVo.Request requestVo = contractMapper.toPurchaseVo(tokenId, requestDto);
-        ContractPurchaseVo.Response responseVo = contractService.purchaseToken(requestVo);
-        ContractPurchaseDto.PurchaseResponse responseDto = contractMapper.toPurchaseDto(responseVo);
+    @PostMapping("{tokenId}/buy")
+    public ResponseEntity<CommonResponseDto<ContractBuyDto.BuyResponse>> buyToken(@PathVariable("tokenId") String tokenId, @RequestBody @Validated ContractBuyDto.BuyRequest requestDto) {
+        ContractBuyVo.Request requestVo = contractMapper.toBuyVo(tokenId, requestDto);
+        ContractBuyVo.Response responseVo = contractService.buyToken(requestVo);
+        ContractBuyDto.BuyResponse responseDto = contractMapper.toBuyDto(responseVo);
         return CommonResponseDto.created(responseDto);
     }
 

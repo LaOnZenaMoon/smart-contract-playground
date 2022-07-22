@@ -5,11 +5,11 @@ import lombok.*;
 import javax.validation.constraints.NotBlank;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ContractPurchaseDto {
+public class ContractBuyDto {
 
     @Getter
     @NoArgsConstructor
-    public static class PurchaseRequest {
+    public static class BuyRequest {
         @NotBlank
         private String privateKey;
         @NotBlank
@@ -19,7 +19,7 @@ public class ContractPurchaseDto {
     @Getter
     @ToString
     @AllArgsConstructor
-    public static class PurchaseResponse {
+    public static class BuyResponse {
         private final String transactionHash;
     }
 

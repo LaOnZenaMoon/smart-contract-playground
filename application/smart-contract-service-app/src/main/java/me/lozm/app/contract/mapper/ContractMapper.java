@@ -1,12 +1,12 @@
 package me.lozm.app.contract.mapper;
 
+import me.lozm.app.contract.dto.ContractBuyDto;
 import me.lozm.app.contract.dto.ContractListDto;
 import me.lozm.app.contract.dto.ContractMintDto;
-import me.lozm.app.contract.dto.ContractPurchaseDto;
 import me.lozm.app.contract.dto.ContractSellDto;
+import me.lozm.app.contract.vo.ContractBuyVo;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
-import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.web3j.MintLozmToken;
 import me.lozm.web3j.SaleLozmToken;
@@ -35,9 +35,9 @@ public interface ContractMapper {
     @Mapping(source = "tokenId", target = "tokenId")
     @Mapping(source = "requestDto.privateKey", target = "privateKey")
     @Mapping(source = "requestDto.tokenPrice", target = "tokenPrice")
-    ContractPurchaseVo.Request toPurchaseVo(String tokenId, ContractPurchaseDto.PurchaseRequest requestDto);
+    ContractBuyVo.Request toBuyVo(String tokenId, ContractBuyDto.BuyRequest requestDto);
 
-    ContractPurchaseDto.PurchaseResponse toPurchaseDto(ContractPurchaseVo.Response responseVo);
+    ContractBuyDto.BuyResponse toBuyDto(ContractBuyVo.Response responseVo);
 
     ContractListDto.ListDetail toListDto(ContractListVo.Detail vo);
 

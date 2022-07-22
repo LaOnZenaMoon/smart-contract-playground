@@ -3,9 +3,9 @@ package me.lozm.app.contract.service;
 import lombok.extern.slf4j.Slf4j;
 import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.contract.code.TokenSearchType;
+import me.lozm.app.contract.vo.ContractBuyVo;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
-import me.lozm.app.contract.vo.ContractPurchaseVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.global.config.SmartContractConfig;
 import org.junit.jupiter.api.Disabled;
@@ -116,7 +116,7 @@ class ContractServiceImplTest {
     @Disabled
     @DisplayName("token 구매 성공")
     @Test
-    void purchaseToken_success() throws IOException {
+    void buyToken_success() throws IOException {
         // Given
         final String systemPrivateKey = smartContractConfig.getEoa().getSystemPrivateKey();
         final String samplePrivateKey = smartContractConfig.getEoa().getSamplePrivateKey();
@@ -143,11 +143,11 @@ class ContractServiceImplTest {
         log.info(sellTransactionReceipt.toString());
 
         log.info("5. token 구매");
-        ContractPurchaseVo.Response purchaseResponseVo = contractService.purchaseToken(new ContractPurchaseVo.Request(samplePrivateKey, tokenId, tokenPrice));
+        ContractBuyVo.Response buyResponseVo = contractService.buyToken(new ContractBuyVo.Request(samplePrivateKey, tokenId, tokenPrice));
 
         log.info("6. token 구매 트랜잭션 조회");
-        TransactionReceipt purchaseTransactionReceipt = smartContractClient.getTransactionReceipt(sellResponseVo.getTransactionHash());
-        log.info(purchaseTransactionReceipt.toString());
+        TransactionReceipt buyTransactionReceipt = smartContractClient.getTransactionReceipt(sellResponseVo.getTransactionHash());
+        log.info(buyTransactionReceipt.toString());
 
         log.info("7. token 구매자의 token 목록 조회");
         ContractListVo.Response listResponseVo2 = contractService.getTokens(new ContractListVo.Request(TokenSearchType.PRIVATE, samplePrivateKey));
@@ -162,10 +162,10 @@ class ContractServiceImplTest {
 
         assertTrue(sellTransactionReceipt.isStatusOK());
 
-        assertTrue(isNotEmpty(purchaseResponseVo));
-        assertTrue(isNotBlank(purchaseResponseVo.getTransactionHash()));
+        assertTrue(isNotEmpty(buyResponseVo));
+        assertTrue(isNotBlank(buyResponseVo.getTransactionHash()));
 
-        assertTrue(purchaseTransactionReceipt.isStatusOK());
+        assertTrue(buyTransactionReceipt.isStatusOK());
 
         assertTrue(isNotEmpty(listResponseVo2));
         assertFalse(listResponseVo2.getTokenList().isEmpty());

@@ -13,6 +13,10 @@
     smart-contracts:
       initialize: true
   ```
+* REST API Documentation
+  ```
+  http://{{host}}:8000/swagger-ui/index.html
+  ```
 
 ### core
 #### core-utils
@@ -57,5 +61,8 @@
 * Java 11
 * Spring Boot 2.5.x
 * Swagger
+  ```
+  http://{{host}}:8000/swagger-ui/index.html
+  ```
 * [web3j-gradle-plugin](https://github.com/web3j/web3j-gradle-plugin)
 * [solidity-gradle-plugin](https://github.com/web3j/solidity-gradle-plugin)

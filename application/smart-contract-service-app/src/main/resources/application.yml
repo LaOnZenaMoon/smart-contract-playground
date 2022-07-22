@@ -8,6 +8,9 @@ spring:
   profiles:
     active: local
 
+smart-contracts:
+  initialize: false
+
 logging:
   level:
     root: INFO

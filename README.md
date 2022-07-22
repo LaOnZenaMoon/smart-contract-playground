@@ -8,6 +8,11 @@
 ### application
 #### smart-contract-service-app
 * The server for smart-contract operations
+* If you deploy smart contracts at the first time, needs to set up initialize options to 'true' on application.yml file.
+  ```
+    smart-contracts:
+      initialize: true
+  ```
 
 ### core
 #### core-utils

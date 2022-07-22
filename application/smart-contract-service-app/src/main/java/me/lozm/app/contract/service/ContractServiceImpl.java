@@ -24,7 +24,6 @@ import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -41,14 +40,6 @@ public class ContractServiceImpl implements ContractService {
     private final SmartContractConfig smartContractConfig;
     private final IpfsConfig ipfsConfig;
 
-
-    @PostConstruct
-    public void initialize() {
-        Credentials systemCredentials = Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey());
-        setApprovalForAll(systemCredentials);
-        isApprovedForAll(systemCredentials);
-        setSaleLozmToken(systemCredentials);
-    }
 
     @Override
     public ContractMintVo.Response mintToken(ContractMintVo.Request requestVo) {
@@ -126,13 +117,15 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @NotNull
-    private MintLozmToken getMintLozmTokenInstance(Credentials senderCredentials, Web3j web3j) {
+    @Override
+    public MintLozmToken getMintLozmTokenInstance(Credentials senderCredentials, Web3j web3j) {
         return MintLozmToken.load(smartContractConfig.getContractAddress().getMintToken(), web3j,
                 senderCredentials, smartContractConfig.getGasProviderInstance());
     }
 
     @NotNull
-    private SaleLozmToken getSaleLozmTokenInstance(Credentials senderCredentials, Web3j web3j) {
+    @Override
+    public SaleLozmToken getSaleLozmTokenInstance(Credentials senderCredentials, Web3j web3j) {
         return SaleLozmToken.load(smartContractConfig.getContractAddress().getSaleToken(), web3j,
                 senderCredentials, smartContractConfig.getGasProviderInstance());
     }
@@ -141,45 +134,6 @@ public class ContractServiceImpl implements ContractService {
         Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
                 getMintLozmTokenInstance(Credentials.create(requestVo.getPrivateKey()), web3j)
                         .mintToken(multihash.toString())
-                        .sendAsync()
-                        .get();
-
-        TransactionReceipt transactionReceipt = smartContractClient.callFunction(function);
-        if (!transactionReceipt.isStatusOK()) {
-            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
-        }
-    }
-
-    private void setApprovalForAll(Credentials systemCredentials) {
-        Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
-                getMintLozmTokenInstance(systemCredentials, web3j)
-                        .setApprovalForAll(smartContractConfig.getContractAddress().getSaleToken(), true)
-                        .sendAsync()
-                        .get();
-
-        TransactionReceipt transactionReceipt = smartContractClient.callFunction(function);
-        if (!transactionReceipt.isStatusOK()) {
-            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
-        }
-    }
-
-    private void isApprovedForAll(Credentials systemCredentials) {
-        Web3jWrapperFunction<Web3j, Boolean> function = web3j ->
-                getMintLozmTokenInstance(systemCredentials, web3j)
-                        .isApprovedForAll(systemCredentials.getAddress(), smartContractConfig.getContractAddress().getSaleToken())
-                        .sendAsync()
-                        .get();
-
-        Boolean isSuccess = smartContractClient.callFunction(function);
-        if (!isSuccess) {
-            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
-        }
-    }
-
-    private void setSaleLozmToken(Credentials systemCredentials) {
-        Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
-                getMintLozmTokenInstance(systemCredentials, web3j)
-                        .setSaleLozmToken(smartContractConfig.getContractAddress().getSaleToken())
                         .sendAsync()
                         .get();
 

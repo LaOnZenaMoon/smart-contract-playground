@@ -3,9 +3,6 @@ plugins {
     id "org.web3j" version "4.9.2"
 }
 
-bootJar { enabled = false }
-jar { enabled = true }
-
 solidity {
 //    version = '0.8.0'
     evmVersion = 'ISTANBUL'

@@ -1,21 +1,5 @@
-task cleanAndCopySolidity {
-//    dependsOn build
-    group = 'other'
-
-    doFirst {
-        println '===== start delete previous solidity ====='
-        delete file('src/main/solidity')
-        println '===== finish delete previous solidity ====='
-    }
-
-    doLast {
-        copy {
-            println '===== start copy solidity ====='
-            from file("${project.rootDir}/contracts/nft-market/contracts")
-            into file('src/main/solidity/contracts')
-            println '===== finish copy solidity ====='
-        }
-    }
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
 }
 
 dependencies {

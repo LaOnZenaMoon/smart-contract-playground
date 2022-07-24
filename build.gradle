@@ -1,15 +1,18 @@
 plugins {
     id 'java'
     id 'java-library'
-    id 'org.springframework.boot' version '2.5.8'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
-    apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
+
+    ext {
+        set('springBootVersion', '2.5.8')
+    }
+
 
     group 'me.lozm'
     version '1.0.0'

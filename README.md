@@ -15,7 +15,7 @@
   ```
 * REST API Documentation
   ```
-  http://{{host}}:8000/swagger-ui/index.html
+  http://{{host}}:8000/swagger-ui.html
   ```
 
 ### core

@@ -19,8 +19,19 @@ deactivate back_end
 front_end-->사용자: 회원가입 완료\n- private key\n- mnemonic\n- wallet address
 deactivate front_end
 
+사용자->front_end: 사용자 정보 입력\n- 로그인 ID\n- 패스워드
+note left: 사용자 로그인
+activate front_end
+front_end->back_end: 로그인 요청
+activate back_end
+back_end->database: 로그인 ID와 패스워드로 사용자 조회
+back_end->back_end: JWT 생성\n- 사용자 ID\n- wallet address
+back_end-->front_end: 로그인 응답
+deactivate back_end
+front_end-->사용자: JWT 전달
+deactivate front_end
 
-사용자->front_end: action 요청\n- 로그인 ID\n- 패스워드
+사용자->front_end: action 요청\n- JWT\n- 패스워드
 note left: 인증이 필요한 actions\n(JWT 를 활용한 로그인 처리 고려)
 activate front_end
 front_end->back_end

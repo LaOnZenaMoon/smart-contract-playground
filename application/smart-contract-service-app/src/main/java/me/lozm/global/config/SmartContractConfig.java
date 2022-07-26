@@ -25,6 +25,7 @@ public class SmartContractConfig {
     private String gasLimit;
     private ContractAddress contractAddress;
     private Eoa eoa;
+    private Wallet wallet;
     private StaticGasProvider gasProvider;
 
 
@@ -44,9 +45,14 @@ public class SmartContractConfig {
     @Getter
     @Setter
     public static class Eoa {
-
         private String systemPrivateKey;
         private String samplePrivateKey;
+    }
+
+    @Getter
+    @Setter
+    public static class Wallet {
+        private String uploadPath;
     }
 
     public Web3j createWeb3jInstance() {

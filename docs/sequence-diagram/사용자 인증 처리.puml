@@ -1,0 +1,44 @@
+@startuml
+title 사용자 인증 처리
+
+actor 사용자
+participant front_end
+participant back_end
+participant database
+
+사용자->front_end: 사용자 ID 와 private key 전달
+note left: 사용자 로그인
+activate front_end
+front_end->front_end: private key 를 사용하여, public key 생성
+front_end->back_end: public key 전달
+activate back_end
+back_end->database: 사용자 ID 에 매핑되는 public key 저장
+back_end-->front_end: 사용자 ID 전달
+deactivate back_end
+front_end->front_end: 사용자 ID 및 private key 를 사용하여, 디지털 서명 생성
+front_end->back_end: JWT 생성 요청
+activate back_end
+back_end->database: 사용자 ID 로 조회
+database-->back_end: public key 및 사용자 정보 전달
+back_end->back_end: public key 를 사용하여, 디지털 서명 검증
+back_end->back_end: 디지털 서명 및 사용자 정보를 사용하여, JWT 생성
+back_end-->front_end: JWT 생성 응답
+deactivate back_end
+deactivate front_end
+front_end-->사용자: JWT 전달
+
+사용자->front_end: action 요청
+note left: 인증이 필요한 actions
+activate front_end
+front_end->back_end: JWT 전달
+activate back_end
+back_end->database: 사용자 ID 로 조회
+database-->back_end: public key 및 사용자 정보 전달
+back_end->back_end: public key 를 사용하여, 디지털 서명 검증
+back_end->back_end: action 로직 처리
+back_end-->front_end
+deactivate back_end
+front_end-->사용자: action 응답
+deactivate front_end
+
+@enduml

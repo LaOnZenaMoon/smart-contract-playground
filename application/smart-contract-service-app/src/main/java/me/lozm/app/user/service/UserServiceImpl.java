@@ -2,6 +2,7 @@ package me.lozm.app.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.lozm.app.contract.client.SmartContractClient;
 import me.lozm.app.user.vo.UserSignInVo;
 import me.lozm.app.user.vo.UserSignUpVo;
 import me.lozm.domain.user.entity.User;
@@ -19,11 +20,15 @@ import org.web3j.crypto.Bip39Wallet;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
+import org.web3j.utils.Convert;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Service
@@ -35,6 +40,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserHelperService userHelperService;
     private final PasswordEncoder passwordEncoder;
+    private final SmartContractClient smartContractClient;
 
 
     @Override
@@ -42,7 +48,7 @@ public class UserServiceImpl implements UserService {
     public UserSignUpVo.Response signUp(UserSignUpVo.Request requestVo) {
         try {
             final String loginId = requestVo.getLoginId();
-            if (userHelperService.findUser(loginId).isPresent()) {
+            if (userHelperService.findUserByLoginId(loginId).isPresent()) {
                 throw new BadRequestException(CustomExceptionType.ALREADY_EXIST_LOGIN_ID);
             }
 
@@ -56,6 +62,11 @@ public class UserServiceImpl implements UserService {
 
             final String encodedPassword = passwordEncoder.encode(requestVo.getPassword());
             userRepository.save(User.create(loginId, encodedPassword, credentialsFromWallet.getAddress(), wallet.getFilename()));
+
+            final String defaultBalance = smartContractConfig.getEoa().getDefaultBalance();
+            if (isNotBlank(defaultBalance)) {
+                smartContractClient.sendBalance(credentialsFromWallet.getAddress(), Convert.Unit.ETHER, new BigDecimal(defaultBalance));
+            }
 
             return UserSignUpVo.Response.builder()
                     .filename(wallet.getFilename())
@@ -74,13 +85,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserSignInVo.Response signIn(UserSignInVo.Request requestVo) {
-        try {
-            final String loginId = requestVo.getLoginId();
-            final String password = requestVo.getPassword();
-            User user = validateAndGetUser(loginId, password);
+        final String loginId = requestVo.getLoginId();
+        final String password = requestVo.getPassword();
+        Credentials credentials = getCredentialsUsingWallet(loginId, password);
+        return new UserSignInVo.Response(credentials.getAddress());
+    }
 
-            Credentials credentials = getCredentialsFromWallet(password, user.getWalletFile());
-            return new UserSignInVo.Response(credentials.getAddress());
+    @Override
+    public Credentials getCredentialsUsingWallet(String loginId, String password) {
+        try {
+            User user = validateAndGetUser(loginId, password);
+            return getCredentialsFromWallet(password, user.getWalletFile());
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR);
@@ -92,7 +107,7 @@ public class UserServiceImpl implements UserService {
 
     @NotNull
     private User validateAndGetUser(String loginId, String password) {
-        User user = userHelperService.getUser(loginId);
+        User user = userHelperService.getUserByLoginId(loginId);
         boolean matches = passwordEncoder.matches(password, user.getEncryptedPassword());
         if (!matches) {
             throw new BadRequestException(CustomExceptionType.INVALID_USER_PASSWORD);

@@ -45,6 +45,7 @@ public class SmartContractConfig {
     @Getter
     @Setter
     public static class Eoa {
+        private String defaultBalance;
         private String systemPrivateKey;
         private String samplePrivateKey;
     }

@@ -20,21 +20,22 @@ import java.io.File;
 public interface ContractMapper {
 
     @Mapping(source = "uploadFile", target = "uploadFile")
-    @Mapping(source = "requestDto.privateKey", target = "privateKey")
+    @Mapping(source = "requestDto.loginId", target = "loginId")
+    @Mapping(source = "requestDto.password", target = "password")
     ContractMintVo.Request toMintVo(File uploadFile, ContractMintDto.MintRequest requestDto);
 
     ContractMintDto.MintResponse toMintDto(ContractMintVo.Response responseVo);
 
     @Mapping(source = "tokenId", target = "tokenId")
-    @Mapping(source = "requestDto.privateKey", target = "privateKey")
-    @Mapping(source = "requestDto.tokenPrice", target = "tokenPrice")
+    @Mapping(source = "requestDto.loginId", target = "loginId")
+    @Mapping(source = "requestDto.password", target = "password")
     ContractSellVo.Request toSellVo(String tokenId, ContractSellDto.SellRequest requestDto);
 
     ContractSellDto.SellResponse toSellDto(ContractSellVo.Response responseVo);
 
     @Mapping(source = "tokenId", target = "tokenId")
-    @Mapping(source = "requestDto.privateKey", target = "privateKey")
-    @Mapping(source = "requestDto.tokenPrice", target = "tokenPrice")
+    @Mapping(source = "requestDto.loginId", target = "loginId")
+    @Mapping(source = "requestDto.password", target = "password")
     ContractBuyVo.Request toBuyVo(String tokenId, ContractBuyDto.BuyRequest requestDto);
 
     ContractBuyDto.BuyResponse toBuyDto(ContractBuyVo.Response responseVo);

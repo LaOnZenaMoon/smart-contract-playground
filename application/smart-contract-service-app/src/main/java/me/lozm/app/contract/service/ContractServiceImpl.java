@@ -12,6 +12,7 @@ import me.lozm.app.contract.vo.ContractBuyVo;
 import me.lozm.app.contract.vo.ContractListVo;
 import me.lozm.app.contract.vo.ContractMintVo;
 import me.lozm.app.contract.vo.ContractSellVo;
+import me.lozm.app.user.service.UserService;
 import me.lozm.global.config.IpfsConfig;
 import me.lozm.global.config.SmartContractConfig;
 import me.lozm.utils.exception.CustomExceptionType;
@@ -39,6 +40,7 @@ public class ContractServiceImpl implements ContractService {
     private final SmartContractClient smartContractClient;
     private final SmartContractConfig smartContractConfig;
     private final IpfsConfig ipfsConfig;
+    private final UserService userService;
 
 
     @Override
@@ -50,20 +52,22 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public ContractListVo.Response getTokens(ContractListVo.Request requestVo) {
-        final String senderPrivateKey = requestVo.getPrivateKey();
+        final String walletAddress = requestVo.getWalletAddress();
         final TokenSearchType tokenSearchType = requestVo.getTokenSearchType();
+
+        Credentials systemCredentials = Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey());
 
         List<ContractListVo.Detail> resultList;
         if (tokenSearchType == TokenSearchType.ON_SALE) {
-            if (isBlank(senderPrivateKey)) {
-                resultList = getTokensOnSale(Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey()));
+            if (isBlank(walletAddress)) {
+                resultList = getTokensOnSale(systemCredentials);
             } else {
-                resultList = getTokensByPrivateKey(Credentials.create(senderPrivateKey)).stream()
+                resultList = getTokensByWalletAddress(systemCredentials, walletAddress).stream()
                         .filter(vo -> vo.getTokenStatus() == TokenStatus.SALE)
                         .collect(toList());
             }
         } else if (tokenSearchType == TokenSearchType.PRIVATE) {
-            resultList = getTokensByPrivateKey(Credentials.create(senderPrivateKey));
+            resultList = getTokensByWalletAddress(systemCredentials, walletAddress);
         } else {
             throw new IllegalArgumentException(format("지원하지 않는 토큰 검색 유형입니다. 토큰 검색 유형: %s", tokenSearchType));
         }
@@ -71,24 +75,21 @@ public class ContractServiceImpl implements ContractService {
         return new ContractListVo.Response(resultList);
     }
 
-    private List<ContractListVo.Detail> getTokensOnSale(Credentials senderCredentials) {
-        Web3jWrapperFunction<Web3j, List<SaleLozmToken.TokenData>> function = web3j ->
-                getSaleLozmTokenInstance(senderCredentials, web3j)
-                        .getTokensOnSale()
-                        .sendAsync()
-                        .get();
-
-        List<SaleLozmToken.TokenData> responseList = smartContractClient.callFunction(function);
-        return responseList.stream()
-                .map(vo -> new ContractListVo.Detail(vo.tokenId, format(ipfsConfig.getPrefixUrl(), vo.tokenUrl), vo.tokenPrice))
-                .collect(toList());
-    }
-
     @Override
     public ContractSellVo.Response sellToken(ContractSellVo.Request requestVo) {
+        Credentials credentialsUsingWallet = userService.getCredentialsUsingWallet(requestVo.getLoginId(), requestVo.getPassword());
+
+        setApprovalForAll(credentialsUsingWallet);
+
+        TransactionReceipt sellTokenTransactionReceipt = sellToken(requestVo, credentialsUsingWallet);
+
+        return new ContractSellVo.Response(sellTokenTransactionReceipt.getTransactionHash());
+    }
+
+    private void setApprovalForAll(Credentials credentialsUsingWallet) {
         Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
-                getSaleLozmTokenInstance(Credentials.create(requestVo.getPrivateKey()), web3j)
-                        .sellToken(requestVo.getTokenId(), requestVo.getTokenPrice())
+                getMintLozmTokenInstance(credentialsUsingWallet, web3j)
+                        .setApprovalForAll(smartContractConfig.getContractAddress().getSaleToken(), true)
                         .sendAsync()
                         .get();
 
@@ -96,14 +97,29 @@ public class ContractServiceImpl implements ContractService {
         if (!transactionReceipt.isStatusOK()) {
             throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
         }
+    }
 
-        return new ContractSellVo.Response(transactionReceipt.getTransactionHash());
+    @NotNull
+    private TransactionReceipt sellToken(ContractSellVo.Request requestVo, Credentials credentialsUsingWallet) {
+        Web3jWrapperFunction<Web3j, TransactionReceipt> sellTokenFunction = web3j ->
+                getSaleLozmTokenInstance(credentialsUsingWallet, web3j)
+                        .sellToken(requestVo.getTokenId(), requestVo.getTokenPrice())
+                        .sendAsync()
+                        .get();
+
+        TransactionReceipt transactionReceipt = smartContractClient.callFunction(sellTokenFunction);
+        if (!transactionReceipt.isStatusOK()) {
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT);
+        }
+        return transactionReceipt;
     }
 
     @Override
     public ContractBuyVo.Response buyToken(ContractBuyVo.Request requestVo) {
+        Credentials credentialsUsingWallet = userService.getCredentialsUsingWallet(requestVo.getLoginId(), requestVo.getPassword());
+
         Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
-                getSaleLozmTokenInstance(Credentials.create(requestVo.getPrivateKey()), web3j)
+                getSaleLozmTokenInstance(credentialsUsingWallet, web3j)
                         .buyToken(requestVo.getTokenId(), requestVo.getTokenPrice())
                         .sendAsync()
                         .get();
@@ -131,8 +147,10 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private void mintToken(ContractMintVo.Request requestVo, Multihash multihash) {
+        Credentials credentialsUsingWallet = userService.getCredentialsUsingWallet(requestVo.getLoginId(), requestVo.getPassword());
+
         Web3jWrapperFunction<Web3j, TransactionReceipt> function = web3j ->
-                getMintLozmTokenInstance(Credentials.create(requestVo.getPrivateKey()), web3j)
+                getMintLozmTokenInstance(credentialsUsingWallet, web3j)
                         .mintToken(multihash.toString())
                         .sendAsync()
                         .get();
@@ -143,14 +161,27 @@ public class ContractServiceImpl implements ContractService {
         }
     }
 
-    private List<ContractListVo.Detail> getTokensByPrivateKey(Credentials senderCredentials) {
+    private List<ContractListVo.Detail> getTokensByWalletAddress(Credentials senderCredentials, String walletAddress) {
         Web3jWrapperFunction<Web3j, List<MintLozmToken.TokenData>> function = web3j ->
                 getMintLozmTokenInstance(senderCredentials, web3j)
-                        .getTokens(senderCredentials.getAddress())
+                        .getTokens(walletAddress)
                         .sendAsync()
                         .get();
 
         List<MintLozmToken.TokenData> responseList = smartContractClient.callFunction(function);
+        return responseList.stream()
+                .map(vo -> new ContractListVo.Detail(vo.tokenId, format(ipfsConfig.getPrefixUrl(), vo.tokenUrl), vo.tokenPrice))
+                .collect(toList());
+    }
+
+    private List<ContractListVo.Detail> getTokensOnSale(Credentials senderCredentials) {
+        Web3jWrapperFunction<Web3j, List<SaleLozmToken.TokenData>> function = web3j ->
+                getSaleLozmTokenInstance(senderCredentials, web3j)
+                        .getTokensOnSale()
+                        .sendAsync()
+                        .get();
+
+        List<SaleLozmToken.TokenData> responseList = smartContractClient.callFunction(function);
         return responseList.stream()
                 .map(vo -> new ContractListVo.Detail(vo.tokenId, format(ipfsConfig.getPrefixUrl(), vo.tokenUrl), vo.tokenPrice))
                 .collect(toList());

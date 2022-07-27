@@ -31,8 +31,6 @@ public class ContractInitializer implements CommandLineRunner {
         boolean smartContractIsInitialized = validateInitializeValue(environment.getProperty("smart-contracts.initialize"));
         if (smartContractIsInitialized) {
             Credentials systemCredentials = Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey());
-            setApprovalForAll(systemCredentials);
-            isApprovedForAll(systemCredentials);
             setSaleLozmToken(systemCredentials);
         }
     }

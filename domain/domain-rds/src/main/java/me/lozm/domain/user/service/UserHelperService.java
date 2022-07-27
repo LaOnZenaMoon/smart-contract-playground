@@ -14,13 +14,22 @@ public class UserHelperService {
     private final UserRepository userRepository;
 
 
-    public Optional<User> findUser(String loginId) {
+    public Optional<User> findUserByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId);
     }
 
-    public User getUser(String loginId) {
-        return findUser(loginId)
-                .orElseThrow(() -> new IllegalArgumentException(String.format("존재하지 않는 사용자입니다. 사용자 계정: [%s]", loginId)));
+    public User getUserByLoginId(String loginId) {
+        return findUserByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("존재하지 않는 사용자입니다. 로그인 ID: [%s]", loginId)));
+    }
+
+    public Optional<User> findUserByWalletAddress(String walletAddress) {
+        return userRepository.findByWalletAddress(walletAddress);
+    }
+
+    public User getUserByWalletAddress(String walletAddress) {
+        return findUserByWalletAddress(walletAddress)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("존재하지 않는 사용자입니다. 지갑 주소: [%s]", walletAddress)));
     }
 
 }

@@ -61,9 +61,9 @@ public class ContractController {
     @GetMapping
     public ResponseEntity<CommonResponseDto<ContractListDto.ListResponse>> getTokens(
             @RequestParam(value = "tokenSearchType", required = false) TokenSearchType tokenSearchType,
-            @RequestParam(value = "privateKey", required = false) String privateKey) {
+            @RequestParam(value = "walletAddress", required = false) String walletAddress) {
 
-        ContractListVo.Response responseVo = contractService.getTokens(new ContractListVo.Request(tokenSearchType, privateKey));
+        ContractListVo.Response responseVo = contractService.getTokens(new ContractListVo.Request(tokenSearchType, walletAddress));
 
         List<ContractListDto.ListDetail> tokenList = responseVo.getTokenList()
                 .stream()

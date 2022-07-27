@@ -18,7 +18,7 @@ public enum CustomExceptionType {
 
     // User
     ALREADY_EXIST_LOGIN_ID("USER_001", "이미 존재하는 로그인 ID 입니다."),
-    INVALID_USER_PASSWORD("USER_002", "사용자의 패스워드가 잘못되었습니다."),
+    INVALID_USER_PASSWORD("USER_002", "사용자의 비밀번호가 잘못되었습니다."),
     ;
 
     private final String code;

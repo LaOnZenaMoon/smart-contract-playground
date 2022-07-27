@@ -8,10 +8,9 @@ import me.lozm.app.contract.vo.ContractMintVo;
 import me.lozm.app.contract.vo.ContractSellVo;
 import me.lozm.app.user.service.UserService;
 import me.lozm.app.user.vo.UserSignUpVo;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import me.lozm.domain.user.entity.User;
+import me.lozm.domain.user.repository.UserRepository;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Disabled("테스트 시, IPFS Daemon 및 local 블록체인 네트워크 (container) 필요")
 @Slf4j
 @ActiveProfiles("local")
 @SpringBootTest
@@ -46,7 +46,13 @@ class ContractServiceImplTest {
         buyerVo = userService.signUp(new UserSignUpVo.Request(BUYER_LOGIN_ID_EXAMPLE, PASSWORD_EXAMPLE));
     }
 
-    @Disabled
+    @AfterAll
+    static void afterAll(@Autowired UserRepository userRepository) {
+        List<User> signUpUserList = userRepository.findAllByLoginIdIn(List.of(SELLER_LOGIN_ID_EXAMPLE, BUYER_LOGIN_ID_EXAMPLE));
+        userRepository.deleteAll(signUpUserList);
+    }
+
+
     @DisplayName("mint token 성공")
     @ParameterizedTest(name = "{index}. {displayName} 입력값={0}")
     @ValueSource(strings = {"hello.txt", "sample.jpg"})
@@ -62,7 +68,6 @@ class ContractServiceImplTest {
         assertTrue(isNotBlank(responseVo.getTokenUrl()));
     }
 
-    @Disabled
     @DisplayName("token 목록 조회 성공")
     @Test
     void getTokens_success() throws IOException {
@@ -83,7 +88,6 @@ class ContractServiceImplTest {
         assertFalse(listResponseVo.getTokenList().isEmpty());
     }
 
-    @Disabled
     @DisplayName("token 판매 등록 성공")
     @Test
     void sellToken_success() throws IOException {
@@ -111,7 +115,6 @@ class ContractServiceImplTest {
         assertTrue(isNotBlank(sellResponseVo.getTransactionHash()));
     }
 
-    @Disabled
     @DisplayName("token 구매 성공")
     @Test
     void buyToken_success() throws IOException {

@@ -21,6 +21,7 @@ import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Disabled("테스트 시, IPFS Daemon (container) 필요")
 @Slf4j
 @SpringBootTest
 class IpfsTest {
@@ -29,7 +30,6 @@ class IpfsTest {
     private IpfsConfig ipfsConfig;
 
 
-    @Disabled
     @DisplayName("IPFS 파일 생성 성공")
     @ParameterizedTest(name = "{index}. {displayName} 입력값={0}")
     @ValueSource(strings = {"hello.txt", "sample.jpg"})

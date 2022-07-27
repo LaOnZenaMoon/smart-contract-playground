@@ -105,6 +105,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public Credentials getCredentialsFromWallet(String password, String walletFileName) throws IOException, CipherException {
+        File walletFile = new File(smartContractConfig.getWallet().getUploadPath() + File.separator + walletFileName);
+        return WalletUtils.loadCredentials(password, walletFile);
+    }
+
     @NotNull
     private User validateAndGetUser(String loginId, String password) {
         User user = userHelperService.getUserByLoginId(loginId);
@@ -113,11 +119,6 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException(CustomExceptionType.INVALID_USER_PASSWORD);
         }
         return user;
-    }
-
-    private Credentials getCredentialsFromWallet(String password, String walletFileName) throws IOException, CipherException {
-        File walletFile = new File(smartContractConfig.getWallet().getUploadPath() + File.separator + walletFileName);
-        return WalletUtils.loadCredentials(password, walletFile);
     }
 
 }

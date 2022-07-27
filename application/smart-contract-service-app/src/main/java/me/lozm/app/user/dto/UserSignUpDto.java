@@ -17,7 +17,7 @@ public class UserSignUpDto {
     @Getter
     @NoArgsConstructor
     public static class SignUpRequest {
-        @Schema(description = LOGIN_ID_DESC, example = LOGIN_ID_EXAMPLE)
+        @Schema(description = LOGIN_ID_DESC, example = SELLER_LOGIN_ID_EXAMPLE)
         @NotBlank
         private String loginId;
         @Schema(description = PASSWORD_DESC, example = PASSWORD_EXAMPLE)

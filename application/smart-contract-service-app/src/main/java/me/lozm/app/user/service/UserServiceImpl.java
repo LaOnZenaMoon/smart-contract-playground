@@ -1,9 +1,9 @@
-package me.lozm.app.auth.service;
+package me.lozm.app.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.lozm.app.auth.vo.AuthSignInVo;
-import me.lozm.app.auth.vo.AuthSignUpVo;
+import me.lozm.app.user.vo.UserSignInVo;
+import me.lozm.app.user.vo.UserSignUpVo;
 import me.lozm.domain.user.entity.User;
 import me.lozm.domain.user.repository.UserRepository;
 import me.lozm.domain.user.service.UserHelperService;
@@ -11,6 +11,7 @@ import me.lozm.global.config.SmartContractConfig;
 import me.lozm.utils.exception.BadRequestException;
 import me.lozm.utils.exception.CustomExceptionType;
 import me.lozm.utils.exception.InternalServerException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +29,7 @@ import java.nio.file.Paths;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService {
+public class UserServiceImpl implements UserService {
 
     private final SmartContractConfig smartContractConfig;
     private final UserRepository userRepository;
@@ -38,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public AuthSignUpVo.Response signUp(AuthSignUpVo.Request requestVo) {
+    public UserSignUpVo.Response signUp(UserSignUpVo.Request requestVo) {
         try {
             final String loginId = requestVo.getLoginId();
             if (userHelperService.findUser(loginId).isPresent()) {
@@ -54,9 +55,9 @@ public class AuthServiceImpl implements AuthService {
             Credentials credentialsFromWallet = getCredentialsFromWallet(requestVo.getPassword(), wallet.getFilename());
 
             final String encodedPassword = passwordEncoder.encode(requestVo.getPassword());
-            userRepository.save(User.create(loginId, encodedPassword, wallet.getFilename()));
+            userRepository.save(User.create(loginId, encodedPassword, credentialsFromWallet.getAddress(), wallet.getFilename()));
 
-            return AuthSignUpVo.Response.builder()
+            return UserSignUpVo.Response.builder()
                     .filename(wallet.getFilename())
                     .privateKey(credentialsFromWallet.getEcKeyPair().getPrivateKey().toString())
                     .mnemonic(wallet.getMnemonic())
@@ -72,17 +73,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthSignInVo.Response signIn(AuthSignInVo.Request requestVo) {
+    public UserSignInVo.Response signIn(UserSignInVo.Request requestVo) {
         try {
+            final String loginId = requestVo.getLoginId();
             final String password = requestVo.getPassword();
-            User user = userHelperService.getUser(requestVo.getLoginId());
-            boolean matches = passwordEncoder.matches(password, user.getEncryptedPassword());
-            if (!matches) {
-                throw new BadRequestException(CustomExceptionType.INVALID_USER_PASSWORD);
-            }
+            User user = validateAndGetUser(loginId, password);
 
-            Credentials credentials = getCredentialsFromWallet(password, user.getWallet());
-            return new AuthSignInVo.Response(credentials.getAddress());
+            Credentials credentials = getCredentialsFromWallet(password, user.getWalletFile());
+            return new UserSignInVo.Response(credentials.getAddress());
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR);
@@ -90,6 +88,16 @@ public class AuthServiceImpl implements AuthService {
             log.error(e.getMessage());
             throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_WALLET);
         }
+    }
+
+    @NotNull
+    private User validateAndGetUser(String loginId, String password) {
+        User user = userHelperService.getUser(loginId);
+        boolean matches = passwordEncoder.matches(password, user.getEncryptedPassword());
+        if (!matches) {
+            throw new BadRequestException(CustomExceptionType.INVALID_USER_PASSWORD);
+        }
+        return user;
     }
 
     private Credentials getCredentialsFromWallet(String password, String walletFileName) throws IOException, CipherException {

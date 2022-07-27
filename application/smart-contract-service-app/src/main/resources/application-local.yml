@@ -34,4 +34,4 @@ smart-contracts:
 ipfs:
   prefix-url: http://localhost:8080/ipfs/%s
   address: /ip4/127.0.0.1/tcp/5001
-  temp-upload-path: application/smart-contract-service-app/upload
+  temp-upload-path: upload

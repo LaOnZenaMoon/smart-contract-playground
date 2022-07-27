@@ -1,10 +1,10 @@
-package me.lozm.app.auth.vo;
+package me.lozm.app.user.vo;
 
 import lombok.*;
 import org.springframework.util.Assert;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class AuthSignUpVo {
+public class UserSignUpVo {
 
     @Getter
     public static class Request {

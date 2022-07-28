@@ -60,6 +60,7 @@
   ```
 * Java 11
 * Spring Boot 2.5.x
+* Spring Security
 * Swagger
   ```
   http://{{host}}:8000/swagger-ui/index.html

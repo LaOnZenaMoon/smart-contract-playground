@@ -62,11 +62,9 @@ class UserServiceImplTest {
     @Test
     void getCredentialsFromWalletWithRightPassword_success() throws CipherException, IOException {
         // Given
-        final String wrongPassword = PASSWORD_EXAMPLE;
-
         // When
         User user = userHelperService.getUserByLoginId(LOGIN_ID_EXAMPLE);
-        Credentials credentialsFromWallet = userService.getCredentialsFromWallet(wrongPassword, user.getWalletFile());
+        Credentials credentialsFromWallet = userService.getCredentialsFromWallet(PASSWORD_EXAMPLE, user.getWalletFile());
 
         // Then
         assertEquals(userVo.getWalletAddress(), credentialsFromWallet.getAddress());

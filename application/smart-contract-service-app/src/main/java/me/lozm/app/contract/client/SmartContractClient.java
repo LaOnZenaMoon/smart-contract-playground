@@ -6,7 +6,9 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.utils.Convert;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public interface SmartContractClient {
@@ -21,4 +23,5 @@ public interface SmartContractClient {
 
     <T extends Web3j, R> R callFunction(Web3jWrapperFunction<T, R> trFunction);
 
+    void sendBalance(String userAddress, Convert.Unit unit, BigDecimal amount);
 }

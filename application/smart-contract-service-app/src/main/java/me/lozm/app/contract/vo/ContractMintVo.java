@@ -10,14 +10,17 @@ public class ContractMintVo {
 
     @Getter
     public static class Request {
-        private final String privateKey;
+        private final String loginId;
+        private final String password;
         private final File uploadFile;
 
-        public Request(String privateKey, File uploadFile) {
-            Assert.hasLength(privateKey, "요청자의 개인키 정보는 비어있을 수 없습니다.");
+        public Request(String loginId, String password, File uploadFile) {
+            Assert.hasLength(loginId, "요청자의 개인키 정보는 비어있을 수 없습니다.");
+            Assert.hasLength(password, "요청자의 개인키 정보는 비어있을 수 없습니다.");
             Assert.notNull(uploadFile, "등록할 NFT 파일은 null 일 수 없습니다.");
 
-            this.privateKey = privateKey;
+            this.loginId = loginId;
+            this.password = password;
             this.uploadFile = uploadFile;
         }
     }

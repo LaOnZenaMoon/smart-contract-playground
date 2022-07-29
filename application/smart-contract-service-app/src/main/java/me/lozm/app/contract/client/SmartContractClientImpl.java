@@ -17,8 +17,12 @@ import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.exceptions.TransactionException;
+import org.web3j.tx.Transfer;
+import org.web3j.utils.Convert;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -192,6 +196,27 @@ public class SmartContractClientImpl implements SmartContractClient {
 
         } finally {
             web3j.shutdown();
+        }
+    }
+
+    @Override
+    public void sendBalance(String userAddress, Convert.Unit unit, BigDecimal amount) {
+        Web3j web3j = smartContractConfig.createWeb3jInstance();
+        Credentials systemCredentials = Credentials.create(smartContractConfig.getEoa().getSystemPrivateKey());
+
+        try {
+            TransactionReceipt transactionReceipt = Transfer.sendFunds(web3j, systemCredentials, userAddress, amount, unit).sendAsync().get();
+            if (!transactionReceipt.isStatusOK()) {
+                throw new IllegalArgumentException(format(
+                        "balanace 전송에 실패하였습니다. user address: %s, amount: %s", userAddress, amount));
+            }
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+            Thread.currentThread().interrupt();
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT, e);
+        } catch (IOException | TransactionException | ExecutionException e) {
+            log.error(e.getMessage());
+            throw new InternalServerException(CustomExceptionType.INTERNAL_SERVER_ERROR_SMART_CONTRACT, e);
         }
     }
 

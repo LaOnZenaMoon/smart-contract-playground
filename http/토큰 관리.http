@@ -1,0 +1,110 @@
+### 사용자 회원가입 성공 > seller
+POST {{service-app}}/users/sign-up
+Content-Type: application/json
+
+{
+  "loginId": "{{sellerId}}",
+  "password": "{{password}}"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status == 201, "Response status is wrong");
+});
+client.global.set("SELLER_PRIVATE_KEY", response.body.data.privateKey);
+client.global.set("SELLER_MNEMONIC", response.body.data.mnemonic);
+client.global.set("SELLER_WALLET_ADDRESS", response.body.data.walletAddress);
+%}
+
+### 사용자 회원가입 성공 > buyer
+POST {{service-app}}/users/sign-up
+Content-Type: application/json
+
+{
+  "loginId": "{{buyerId}}",
+  "password": "{{password}}"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status == 201, "Response status is wrong");
+});
+client.global.set("BUYER_PRIVATE_KEY", response.body.data.privateKey);
+client.global.set("BUYER_MNEMONIC", response.body.data.mnemonic);
+client.global.set("BUYER_WALLET_ADDRESS", response.body.data.walletAddress);
+%}
+
+### 토큰 목록 조회 성공 > seller 가 발급한 토큰 중 판매할 토큰 조회
+GET {{service-app}}/tokens?tokenSearchType=PRIVATE&walletAddress={{SELLER_WALLET_ADDRESS}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status == 200, "Response status is wrong");
+});
+if (response.body.data.tokenList.length > 0) {
+    client.global.set("WILL_BE_SOLD_TOKEN_ID_BY_SELLER", response.body.data.tokenList[response.body.data.tokenList.length - 1].tokenId)
+} else {
+    client.log("Please mint token by seller");
+}
+%}
+
+### 토큰 판매 > seller
+POST {{service-app}}/tokens/{{WILL_BE_SOLD_TOKEN_ID_BY_SELLER}}/sell
+Content-Type: application/json
+
+{
+  "loginId": "{{sellerId}}",
+  "password": "{{password}}",
+  "tokenPrice": "{{tokenPrice}}"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status == 201, "Response status is wrong");
+});
+%}
+
+### 토큰 목록 조회 성공 > 판매중인 토큰 > seller
+GET {{service-app}}/tokens?tokenSearchType=ON_SALE&walletAddress={{SELLER_WALLET_ADDRESS}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status == 200, "Response status is wrong");
+  client.assert(response.body.data.tokenList.length > 0, "seller doesn't sell any tokens.");
+});
+%}
+
+### 토큰 구매 > buyer
+POST {{service-app}}/tokens/{{WILL_BE_SOLD_TOKEN_ID_BY_SELLER}}/buy
+Content-Type: application/json
+
+{
+  "loginId": "{{buyerId}}",
+  "password": "{{password}}",
+  "tokenPrice": "{{tokenPrice}}"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status == 201, "Response status is wrong");
+});
+%}
+
+### 토큰 목록 조회 성공 > 구매한 토큰 > buyer
+GET {{service-app}}/tokens?tokenSearchType=PRIVATE&walletAddress={{BUYER_WALLET_ADDRESS}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status == 200, "Response status is wrong");
+  client.assert(response.body.data.tokenList.length > 0, "buyer doesn't have any tokens.");
+});
+%}
+
+### 토큰 목록 조회 성공 > 판매중인 토큰 > 전체
+GET {{service-app}}/tokens?tokenSearchType=ON_SALE
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status == 200, "Response status is wrong");
+});
+%}

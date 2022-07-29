@@ -19,18 +19,18 @@ public class ContractListVo {
     @Getter
     public static class Request {
         private final TokenSearchType tokenSearchType;
-        private final String privateKey;
+        private final String walletAddress;
 
-        public Request(TokenSearchType tokenSearchType, String privateKey) {
+        public Request(TokenSearchType tokenSearchType, String walletAddress) {
             this.tokenSearchType = isEmpty(tokenSearchType) ? TokenSearchType.ON_SALE : tokenSearchType;
-            this.privateKey = privateKey;
+            this.walletAddress = walletAddress;
 
             Assert.isTrue(!validateWhenTokenSearchTypeIsPrivate(),
                     format("토큰 검색 조회 유형이 %s 일 때, 개인키 정보는 비어있을 수 없습니다.", TokenSearchType.PRIVATE.getCode()));
         }
 
         private boolean validateWhenTokenSearchTypeIsPrivate() {
-            return this.tokenSearchType == TokenSearchType.PRIVATE && isBlank(privateKey);
+            return this.tokenSearchType == TokenSearchType.PRIVATE && isBlank(walletAddress);
         }
     }
 

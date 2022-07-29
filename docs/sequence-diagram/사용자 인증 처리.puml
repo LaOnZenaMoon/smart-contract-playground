@@ -6,35 +6,42 @@ participant front_end
 participant back_end
 participant database
 
-사용자->front_end: 사용자 ID 와 private key 전달
-note left: 사용자 로그인
+사용자->front_end: 사용자 정보 입력\n- 로그인 ID\n- 비밀번호
+note left: 사용자 회원가입
 activate front_end
-front_end->front_end: private key 를 사용하여, public key 생성
-front_end->back_end: public key 전달
+front_end->back_end: 회원가입 요청
 activate back_end
-back_end->database: 사용자 ID 에 매핑되는 public key 저장
-back_end-->front_end: 사용자 ID 전달
+back_end->back_end: 로그인 ID 중복 체크
+back_end->back_end: wallet 파일 생성
+back_end->database: 사용자 정보 저장\n- 로그인 ID\n- 비밀번호\n- wallet address\n- wallet 파일
+back_end-->front_end: 회원가입 응답
 deactivate back_end
-front_end->front_end: 사용자 ID 및 private key 를 사용하여, 디지털 서명 생성
-front_end->back_end: JWT 생성 요청
-activate back_end
-back_end->database: 사용자 ID 로 조회
-database-->back_end: public key 및 사용자 정보 전달
-back_end->back_end: public key 를 사용하여, 디지털 서명 검증
-back_end->back_end: 디지털 서명 및 사용자 정보를 사용하여, JWT 생성
-back_end-->front_end: JWT 생성 응답
-deactivate back_end
+front_end-->사용자: 회원가입 완료\n- private key\n- mnemonic\n- wallet address
 deactivate front_end
-front_end-->사용자: JWT 전달
 
-사용자->front_end: action 요청
-note left: 인증이 필요한 actions
+사용자->front_end: 사용자 정보 입력\n- 로그인 ID\n- 비밀번호
+note left: 사용자 로그인(개발 필요)
 activate front_end
-front_end->back_end: JWT 전달
+front_end->back_end: 로그인 요청
 activate back_end
-back_end->database: 사용자 ID 로 조회
-database-->back_end: public key 및 사용자 정보 전달
-back_end->back_end: public key 를 사용하여, 디지털 서명 검증
+back_end->database: (로그인 ID 또는 wallet address) 사용자 정보 조회
+database-->back_end: 사용자 정보
+back_end->back_end: 비밀번호 검증
+back_end->back_end: JWT 생성\n- 사용자 ID\n- wallet address
+back_end-->front_end: 로그인 응답
+deactivate back_end
+front_end-->사용자: JWT 전달
+deactivate front_end
+
+사용자->front_end: action 요청\n- 로그인 ID 또는 wallet address\n- 비밀번호
+note left: 인증이 필요한 actions\n(JWT 를 활용한 로그인 처리 고려)
+activate front_end
+front_end->back_end
+activate back_end
+back_end->database: (로그인 ID 또는 wallet address) 사용자 정보 조회
+database-->back_end: 사용자 정보
+back_end->back_end: 비밀번호 검증
+back_end->back_end: 사용자의 wallet 파일 로드
 back_end->back_end: action 로직 처리
 back_end-->front_end
 deactivate back_end

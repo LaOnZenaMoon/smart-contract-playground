@@ -1,0 +1,32 @@
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+}
+
+jar.enabled(true)
+bootJar.enabled(false)
+
+ext {
+    queryDslVersion = "4.4.0"
+}
+
+dependencies {
+    implementation project(':core:core-utils')
+
+    api 'javax.validation:validation-api'
+    api 'org.springframework.boot:spring-boot-starter-json'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+
+    // QueryDsl
+    implementation('javax.annotation:javax.annotation-api')
+    annotationProcessor('javax.annotation:javax.annotation-api')
+
+    api "com.querydsl:querydsl-jpa:${queryDslVersion}"
+    annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}:jpa"
+    api "com.querydsl:querydsl-jpa:${queryDslVersion}"
+    testAnnotationProcessor "com.querydsl:querydsl-jpa:${queryDslVersion}"
+
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.8'
+
+    api 'com.h2database:h2'
+}

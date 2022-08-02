@@ -10,7 +10,7 @@ ext {
 }
 
 dependencies {
-    implementation project(':core:core-utils')
+    implementation project(':application-be:core-utils')
 
     api 'javax.validation:validation-api'
     api 'org.springframework.boot:spring-boot-starter-json'

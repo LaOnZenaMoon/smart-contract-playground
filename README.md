@@ -1,12 +1,15 @@
-## smart-contract-playground
+# smart-contract-playground
 * Deal with smart contracts about Blockchain
 
-## Project structure
-### dapp
+# Project structure
+## dapp
 * The module for smart contracts
 
-### application
-#### smart-contract-service-app
+## application-fe
+
+
+## application-be
+### smart-contract-service-app
 * The server for smart-contract operations
 * If you deploy smart contracts at the first time, needs to set up initialize options to 'true' on application.yml file.
   ```
@@ -18,14 +21,17 @@
   http://{{host}}:8000/swagger-ui.html
   ```
 
-### core
-#### core-utils
+### core-utils
 * The module for common utilities
 
-#### core-web
+### core-web
 * The module for common web configurations
 
-## Skills
+### domain-rds
+* The module for applications' models and entities about RDBMS
+
+
+# Skills
 * Solidity
 * OpenZeppelin
   ```

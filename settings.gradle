@@ -1,8 +1,8 @@
 rootProject.name = 'smart-contract-playground'
 
-include('application:smart-contract-service-app')
-include('core:core-utils')
-include('core:core-web')
-include('domain:domain-rds')
+include('application-be:smart-contract-service-app')
+include('application-be:core-utils')
+include('application-be:core-web')
+include('application-be:domain-rds')
 
 include('dapp')

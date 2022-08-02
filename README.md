@@ -60,10 +60,10 @@
 * IPFS
   * java-ipfs-http-client
   * [IPFS Daemon](https://docs.ipfs.io/install/)
-  ```
-  $ ipfs init
-  $ ipfs daemon
-  ```
+    ```
+    $ ipfs init
+    $ ipfs daemon
+    ```
 * Java 11
 * Spring Boot 2.5.x
 * Spring Security
